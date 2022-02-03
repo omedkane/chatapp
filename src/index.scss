@@ -1,0 +1,119 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+@import "variables.scss";
+
+@mixin hw-full {
+  height: 100%;
+  width: 100%;
+}
+
+.gShaded-old {
+  box-shadow: 0 1px 6px 0 rgba(32, 33, 36, 0.28);
+}
+
+.gShaded {
+  box-shadow: 0 1px 5px -2px rgba(32, 33, 36, 0.63);
+}
+
+.popShaded {
+  box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+.font-1 {
+  font-family: "Plus Jakarta Sans";
+}
+.font-2 {
+  font-family: "Evolventa";
+}
+
+.font-3 {
+  font-family: "TeX Gyre Heros";
+}
+
+html {
+  font-size: 100%;
+} /*18px*/
+html,
+body {
+  @include hw-full;
+  background-color: white;
+  color: #1f2d3d;
+  overflow-x: hidden;
+  font-family: "Plus Jakarta Sans";
+}
+
+.hw-full {
+  @include hw-full;
+}
+
+p {
+  margin-bottom: 1rem;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-weight: 400;
+  line-height: 1.1;
+}
+
+.no-line-height {
+  line-height: 0;
+}
+
+h1 {
+  font-size: 3.052rem;
+  font-weight: 800;
+}
+
+h2 {
+  font-size: 2.441rem;
+}
+
+h3 {
+  font-size: 1.953rem;
+}
+
+h4 {
+  font-size: 1.563rem;
+}
+
+h5 {
+  font-size: 1.25rem;
+}
+
+small,
+.text_small {
+  font-size: 0.8rem;
+}
+
+.hakkunde {
+  justify-content: center;
+  align-items: center;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+}
+
+.radius-1\/2 {
+  flex: none;
+  border-radius: 50%;
+}
+
+.border-l-1 {
+  border-left-width: 1px;
+}
+.border-r-1 {
+  border-right-width: 1px;
+}
+.border-b-1 {
+  border-bottom-width: 1px;
+}
+.border-t-1 {
+  border-top-width: 1px;
+}

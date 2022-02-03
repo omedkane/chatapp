@@ -1,0 +1,39 @@
+html,
+body {
+  background-color: #282a37;
+}
+#authentication-screen {
+  background-color: #282a37;
+  color: white;
+  font-family: Gilroy;
+
+  #submit-button {
+    background-color: #1d90f5;
+    box-shadow: 0px 0px 16px -1px #1d90f561;
+  }
+}
+
+@media (max-width: 991.98px) and (min-width: 660px) and (orientation: landscape) {
+  #authentication-screen {
+    display: grid;
+    grid-template-areas:
+      "header form"
+      "greet form"
+      ". form";
+    #herd-1 {
+      margin-top: 1rem;
+    }
+    .input-group {
+      justify-content: center;
+      margin-top: 1rem;
+      flex: 1;
+      align-items: center;
+      #auth-inputs {
+        align-items: center;
+        .PandaInput {
+          width: 80%;
+        }
+      }
+    }
+  }
+}

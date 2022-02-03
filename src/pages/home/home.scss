@@ -1,0 +1,64 @@
+@import "../../variables.scss";
+
+#sidebar {
+  background-color: white;
+  width: 6rem;
+}
+
+#middle-panel {
+  height: 100%;
+  width: 22rem;
+  background-color: #fafafe;
+  display: flex;
+  flex-direction: column;
+}
+
+@mixin hakkunde {
+  justify-content: center;
+  align-items: center;
+}
+#current-user-avatar {
+  @include hakkunde;
+  $image-size: 3.5rem;
+  $box-size: $image-size + 0.75rem;
+  display: flex;
+  height: $box-size;
+  width: $box-size;
+  border-radius: 50%;
+  border: 2px solid cornflowerblue;
+  overflow: hidden;
+  //   padding: 0.25rem 0.25rem;
+  > img {
+    border-radius: 50%;
+    height: $image-size;
+    width: $image-size;
+    object-fit: cover;
+  }
+}
+
+.search-box {
+  display: flex;
+  height: 5.5rem;
+  align-items: center;
+  background-color: white;
+  border-radius: 0.25rem;
+  &:has(input:focus) {
+    box-shadow: $gShaded;
+  }
+  .search-icon {
+    margin: 0 1rem;
+  }
+  > input {
+    height: 100%;
+    width: 100%;
+    outline: none;
+  }
+  // &::placeholder {
+  // 	color
+  // }
+}
+#discussion-panel {
+}
+#chat-info {
+  width: 20rem;
+}

@@ -1,0 +1,24 @@
+.avatar {
+  $size: 3.5rem;
+  height: $size;
+  width: $size;
+  border-radius: 50%;
+  position: relative;
+  flex: none;
+  > img {
+    height: inherit;
+    width: inherit;
+    border-radius: inherit;
+    object-fit: cover;
+  }
+  .online-indicator {
+    height: 0.55rem;
+    width: 0.55rem;
+    background-color: crimson;
+    border-radius: 50%;
+    position: absolute;
+    bottom: 0.25rem;
+    right: 0.25rem;
+    border: 1px solid white;
+  }
+}
