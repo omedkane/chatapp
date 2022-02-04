@@ -1,7 +1,11 @@
-import React from "react";
+import { FormContext } from "@pages/authentication/authentication";
 
-export class JustAClass extends React.Component {
-
+export function JustAClass() {
+  return (
+    <FormContext.Consumer>
+      {(value) => <span className="text-white">{value.firstName}</span>}
+    </FormContext.Consumer>
+  );
 }
 
-// JustAClass.contextType = 
+// JustAClass.contextType =

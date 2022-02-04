@@ -8,18 +8,21 @@ interface SignUpForm {
   email: string;
   password: string;
 }
+const fieldMap: SignUpForm = {
+  email: "",
+  firstName: "",
+  lastName: "",
+  password: "",
+};
+
+// ! Try to get Consumer to work
+
+export const FormContext = createContext<SignUpForm>(fieldMap);
 
 export function AuthenticationScreen() {
-  const fieldMap: SignUpForm = {
-    email: "",
-    firstName: "",
-    lastName: "",
-    password: "",
-  };
-  const context = createContext<SignUpForm>(fieldMap);
   console.log("do I rerender");
 
-  const { PandaForm, PandaInput } = useForm<SignUpForm>(context);
+  const { PandaForm, PandaInput, form } = useForm<SignUpForm>(FormContext);
   // const [signUp, result] = AuthAPI.useLoginMutation({});
   // const useForm = () => {
   //   return PandaInput;
@@ -57,13 +60,13 @@ export function AuthenticationScreen() {
               name="firstName"
               className=" md:w-48"
               title="First name"
-              type="basic-info"
+              type="info"
             />
             <PandaInput
               name="lastName"
               className=" md:w-48"
               title="Last name"
-              type="basic-info"
+              type="info"
             />
           </div>
           <div
@@ -74,7 +77,7 @@ export function AuthenticationScreen() {
           </div>
           <button
             onClick={() => {
-              console.log(fieldMap);
+              console.log(form);
             }}
             id="submit-button"
             className="mt-6 lg:mt-12 flex hakkunde rounded-full active:outline-none px-10 py-4">

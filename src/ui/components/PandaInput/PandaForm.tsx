@@ -1,21 +1,25 @@
-import React, { Context, PropsWithChildren } from "react";
+import React, { Context, PropsWithChildren, useContext, useState } from "react";
 import { usePandaInput } from "./PandaInput";
-
-export function useForm<Form>(context: Context<Form>) {
-  return {
-    PandaForm: PandaForm<Form>(context),
-    PandaInput: usePandaInput<Form>(context),
-  };
-}
 
 interface PandaFormProps<Form> {
   fieldMap: Form;
 }
 
-export function PandaForm<Form>(FormContext: Context<Form>) {
-  return (props: PropsWithChildren<PandaFormProps<Form>>) => (
-    <FormContext.Provider value={props.fieldMap}>
-      {props.children}
-    </FormContext.Provider>
-  );
+export function useForm<Form>(FormContext: Context<Form>) {
+  function PandaForm(props: PropsWithChildren<PandaFormProps<Form>>) {
+    return (
+      <FormContext.Provider value={props.fieldMap}>
+        {props.children}
+      </FormContext.Provider>
+    );
+  }
+
+  const [{ FormComponent, InputComponent }] = useState({
+    FormComponent: PandaForm,
+    InputComponent: usePandaInput<Form>(FormContext),
+  });
+
+  const form = useContext(FormContext);
+
+  return { PandaForm: FormComponent, PandaInput: InputComponent, form };
 }

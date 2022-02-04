@@ -1,15 +1,32 @@
 import "./PandaInput.scss";
-import { Context, ReactElement, useContext, useState } from "react";
+import {
+  ComponentType,
+  Context,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { AiOutlineEye } from "react-icons/ai";
 import { HiMail } from "react-icons/hi";
 import { FaUserEdit } from "react-icons/fa";
 
-interface PandaInputProps<T> {
+interface PandaInputProps<T = any> {
   name: keyof T;
   title: string;
-  type: "email" | "basic-info" | "password";
+  type: "email" | "info" | "password";
   className?: string;
 }
+
+type PandaInputIcons = {
+  [key in PandaInputProps["type"]]: ComponentType;
+};
+
+const InputIcons: PandaInputIcons = {
+  email: () => <HiMail size={24} />,
+  info: () => <FaUserEdit size={24} />,
+  password: () => <AiOutlineEye size={24} />,
+};
 
 export function usePandaInput<Form>(FormContext: Context<Form>) {
   function PandaInput({
@@ -19,28 +36,21 @@ export function usePandaInput<Form>(FormContext: Context<Form>) {
     className = "",
   }: PandaInputProps<Form>) {
     console.log(`PandaInput Rerender ${name}`);
+    const InputIcon = InputIcons[type];
 
     const [isFilled, setIsFilled] = useState(false);
     const form = useContext(FormContext);
-
-    let InputIcon: () => ReactElement;
-    switch (type) {
-      case "email":
-        InputIcon = () => <HiMail size={24} />;
-        break;
-      default:
-      case "basic-info":
-        InputIcon = () => <FaUserEdit size={24} />;
-        break;
-      case "password":
-        InputIcon = () => <AiOutlineEye size={24} />;
-        break;
-    }
-
-    function onChange(element: React.ChangeEvent<HTMLInputElement>) {
-      const value = element.target.value;
-
+    const inputRef = useRef<HTMLInputElement>(null);
+    const setForm = (value: string) =>
       Object.defineProperty(form, name, { value });
+
+    useEffect(() => {
+      if (inputRef.current !== null) setForm(inputRef.current.value);
+    });
+
+    const onChange = (element: React.ChangeEvent<HTMLInputElement>) => {
+      const value = element.target.value;
+      setForm(value);
 
       if (value !== "") {
         setIsFilled(true);
@@ -57,13 +67,14 @@ export function usePandaInput<Form>(FormContext: Context<Form>) {
             {title}
           </span>
           <input
-            type="text"
+            type={type === "password" ? type : "text"}
             onChange={onChange}
+            ref={inputRef}
             className="hw-full bg-transparent autofill:bg-black outline-none placeholder:font-bold"
           />
         </div>
         <div className="h-full flex hakkunde text-gray-300">
-          <InputIcon></InputIcon>
+          <InputIcon />
         </div>
       </div>
     );
