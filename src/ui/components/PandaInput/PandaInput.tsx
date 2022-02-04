@@ -11,17 +11,17 @@ interface PandaInputProps<T> {
   className?: string;
 }
 
-export function PandaInput<Form>(FormContext: Context<Form>) {
-  function usePandaInput() {
-    const [isFilled, setIsFilled] = useState(false);
-    const form = useContext(FormContext);
-    return { isFilled, setIsFilled, form };
-  }
-  return ({ name, title, type, className = "" }: PandaInputProps<Form>) => {
+export function usePandaInput<Form>(FormContext: Context<Form>) {
+  function PandaInput({
+    name,
+    title,
+    type,
+    className = "",
+  }: PandaInputProps<Form>) {
     console.log(`PandaInput Rerender ${name}`);
 
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const { isFilled, setIsFilled, form } = usePandaInput();
+    const [isFilled, setIsFilled] = useState(false);
+    const form = useContext(FormContext);
 
     let InputIcon: () => ReactElement;
     switch (type) {
@@ -67,5 +67,7 @@ export function PandaInput<Form>(FormContext: Context<Form>) {
         </div>
       </div>
     );
-  };
+  }
+
+  return PandaInput;
 }

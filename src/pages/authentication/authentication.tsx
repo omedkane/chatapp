@@ -1,4 +1,5 @@
 import "./authentication.scss";
+import { createContext } from "react";
 import { useForm } from "../../ui/components/PandaInput/PandaForm";
 
 interface SignUpForm {
@@ -15,8 +16,10 @@ export function AuthenticationScreen() {
     lastName: "",
     password: "",
   };
+  const context = createContext<SignUpForm>(fieldMap);
+  console.log("do I rerender");
 
-  const { PandaForm, PandaInput } = useForm<SignUpForm>(fieldMap);
+  const { PandaForm, PandaInput } = useForm<SignUpForm>(context);
   // const [signUp, result] = AuthAPI.useLoginMutation({});
   // const useForm = () => {
   //   return PandaInput;

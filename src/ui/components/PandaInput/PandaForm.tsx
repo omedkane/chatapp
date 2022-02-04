@@ -1,11 +1,10 @@
-import React, { Context, createContext, PropsWithChildren } from "react";
-import { PandaInput } from "./PandaInput";
+import React, { Context, PropsWithChildren } from "react";
+import { usePandaInput } from "./PandaInput";
 
-export function useForm<Form>(contextValue: Form) {
-  const context = createContext(contextValue);
+export function useForm<Form>(context: Context<Form>) {
   return {
     PandaForm: PandaForm<Form>(context),
-    PandaInput: PandaInput<Form>(context),
+    PandaInput: usePandaInput<Form>(context),
   };
 }
 
