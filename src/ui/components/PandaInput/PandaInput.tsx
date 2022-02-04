@@ -1,69 +1,71 @@
 import "./PandaInput.scss";
-import { ReactElement, useContext, useRef, useState } from "react";
+import { Context, ReactElement, useContext, useState } from "react";
 import { AiOutlineEye } from "react-icons/ai";
 import { HiMail } from "react-icons/hi";
 import { FaUserEdit } from "react-icons/fa";
-import { FormContext } from "./PandaForm";
 
-interface PandaInputProps {
-  name: string;
+interface PandaInputProps<T> {
+  name: keyof T;
   title: string;
   type: "email" | "basic-info" | "password";
   className?: string;
 }
 
-export function PandaInput<T>({
-  name,
-  title,
-  type,
-  className = "",
-}: PandaInputProps) {
-  const [isFilled, setIsFilled] = useState(false);
-
-  const form = useContext(FormContext);
-
-  let InputIcon: () => ReactElement;
-  switch (type) {
-    case "email":
-      InputIcon = () => <HiMail size={24} />;
-      break;
-    default:
-    case "basic-info":
-      InputIcon = () => <FaUserEdit size={24} />;
-      break;
-    case "password":
-      InputIcon = () => <AiOutlineEye size={24} />;
-      break;
+export function PandaInput<Form>(FormContext: Context<Form>) {
+  function usePandaInput() {
+    const [isFilled, setIsFilled] = useState(false);
+    const form = useContext(FormContext);
+    return { isFilled, setIsFilled, form };
   }
+  return ({ name, title, type, className = "" }: PandaInputProps<Form>) => {
+    console.log(`PandaInput Rerender ${name}`);
 
-  function onChange(element: React.ChangeEvent<HTMLInputElement>) {
-    const value = element.target.value;
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const { isFilled, setIsFilled, form } = usePandaInput();
 
-    Object.defineProperty(form, name, value);
+    let InputIcon: () => ReactElement;
+    switch (type) {
+      case "email":
+        InputIcon = () => <HiMail size={24} />;
+        break;
+      default:
+      case "basic-info":
+        InputIcon = () => <FaUserEdit size={24} />;
+        break;
+      case "password":
+        InputIcon = () => <AiOutlineEye size={24} />;
+        break;
+    }
 
-    if (value !== "") {
-      setIsFilled(true);
-    } else setIsFilled(false);
-  }
+    function onChange(element: React.ChangeEvent<HTMLInputElement>) {
+      const value = element.target.value;
 
-  return (
-    <div className={`PandaInput flex rounded-xl h-16 w-full  ${className}`}>
-      <div
-        className={`input-box rounded-xl flex flex-col hw-full ${
-          isFilled ? "is-filled" : ""
-        }`}>
-        <span id="input-name" className="text-gray-300">
-          {title}
-        </span>
-        <input
-          type="text"
-          onChange={onChange}
-          className="hw-full bg-transparent autofill:bg-black outline-none placeholder:font-bold"
-        />
+      Object.defineProperty(form, name, { value });
+
+      if (value !== "") {
+        setIsFilled(true);
+      } else setIsFilled(false);
+    }
+
+    return (
+      <div className={`PandaInput flex rounded-xl h-16 w-full  ${className}`}>
+        <div
+          className={`input-box rounded-xl flex flex-col hw-full ${
+            isFilled ? "is-filled" : ""
+          }`}>
+          <span id="input-name" className="text-gray-300">
+            {title}
+          </span>
+          <input
+            type="text"
+            onChange={onChange}
+            className="hw-full bg-transparent autofill:bg-black outline-none placeholder:font-bold"
+          />
+        </div>
+        <div className="h-full flex hakkunde text-gray-300">
+          <InputIcon></InputIcon>
+        </div>
       </div>
-      <div className="h-full flex hakkunde text-gray-300">
-        <InputIcon></InputIcon>
-      </div>
-    </div>
-  );
+    );
+  };
 }

@@ -1,9 +1,24 @@
-import AuthAPI from "../../services/auth.service";
-import { PandaForm } from "../../ui/components/PandaInput/PandaForm";
-import { PandaInput } from "../../ui/components/PandaInput/PandaInput";
 import "./authentication.scss";
+import { createContext } from "react";
+import { useForm } from "../../ui/components/PandaInput/PandaForm";
+
+interface SignUpForm {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+}
 
 export function AuthenticationScreen() {
+  const fieldMap: SignUpForm = {
+    email: "",
+    firstName: "",
+    lastName: "",
+    password: "",
+  };
+  const context = createContext<SignUpForm>(fieldMap);
+
+  const { PandaForm, PandaInput } = useForm<SignUpForm>(context);
   // const [signUp, result] = AuthAPI.useLoginMutation({});
   // const useForm = () => {
   //   return PandaInput;
@@ -32,8 +47,7 @@ export function AuthenticationScreen() {
         </span>
       </div>
 
-      <PandaForm
-        fields={{ firstName: "", lastName: "", email: "", password: "" }}>
+      <PandaForm fieldMap={fieldMap}>
         <div
           className="input-group mt-6 flex flex-col gap-x-0 place-items-center lg:justify-start lg:items-start w-full portrait:mt-12"
           style={{ gridArea: "form" }}>
@@ -58,6 +72,9 @@ export function AuthenticationScreen() {
             <PandaInput name="password" title="Password" type="password" />
           </div>
           <button
+            onClick={() => {
+              console.log(fieldMap);
+            }}
             id="submit-button"
             className="mt-6 lg:mt-12 flex hakkunde rounded-full active:outline-none px-10 py-4">
             Sign Up

@@ -1,23 +1,22 @@
-import React, { createContext } from "react";
+import React, {
+  Context,
+  PropsWithChildren,
+} from "react";
+import { PandaInput } from "./PandaInput";
 
-// export function useForm<T>(fields: T) {
-//   const [_fields, setFields] = useState<T>(fields);
-
-//   return [_fields, setFields];
-// }
-
-export const FormContext = createContext({});
-
-interface PandaFormProps {
-  fields: Object;
+export function useForm<Form>(context: Context<Form>) {
+  return {PandaForm: PandaForm<Form>(context), PandaInput: PandaInput<Form>(context)};
 }
 
-export class PandaForm extends React.Component<PandaFormProps> {
-  render(): React.ReactNode {
-    return (
-      <FormContext.Provider value={this.props.fields}>
-        {this.props.children}
-      </FormContext.Provider>
-    );
-  }
+interface PandaFormProps<Form> {
+  fieldMap: Form;
+}
+
+export function PandaForm<Form>(FormContext: Context<Form>) {
+  
+  return (props: PropsWithChildren<PandaFormProps<Form>>) => (
+    <FormContext.Provider value={props.fieldMap}>
+      {props.children}
+    </FormContext.Provider>
+  );
 }
