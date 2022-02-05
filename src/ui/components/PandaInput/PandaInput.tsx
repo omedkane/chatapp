@@ -1,8 +1,6 @@
 import "./PandaInput.scss";
 import {
   ComponentType,
-  Context,
-  useContext,
   useEffect,
   useRef,
   useState,
@@ -12,7 +10,7 @@ import { HiMail } from "react-icons/hi";
 import { FaUserEdit } from "react-icons/fa";
 
 interface PandaInputProps<T = any> {
-  name: keyof T;
+  name: Extract<keyof T, string>;
   title: string;
   type: "email" | "info" | "password";
   className?: string;
@@ -28,7 +26,9 @@ const InputIcons: PandaInputIcons = {
   password: () => <AiOutlineEye size={24} />,
 };
 
-export function usePandaInput<Form>(FormContext: Context<Form>) {
+export function usePandaInput<Form>(
+  setField: (field: string, value: string | number) => void
+) {
   function PandaInput({
     name,
     title,
@@ -39,10 +39,8 @@ export function usePandaInput<Form>(FormContext: Context<Form>) {
     const InputIcon = InputIcons[type];
 
     const [isFilled, setIsFilled] = useState(false);
-    const form = useContext(FormContext);
     const inputRef = useRef<HTMLInputElement>(null);
-    const setForm = (value: string) =>
-      Object.defineProperty(form, name, { value });
+    const setForm = (value: string) => setField(name, value);
 
     useEffect(() => {
       if (inputRef.current !== null) setForm(inputRef.current.value);
@@ -55,7 +53,7 @@ export function usePandaInput<Form>(FormContext: Context<Form>) {
       if (value !== "") {
         setIsFilled(true);
       } else setIsFilled(false);
-    }
+    };
 
     return (
       <div className={`PandaInput flex rounded-xl h-16 w-full  ${className}`}>

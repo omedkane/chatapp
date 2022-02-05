@@ -1,11 +1,8 @@
-import { FormContext } from "@pages/authentication/authentication";
 
 export function JustAClass() {
-  return (
-    <FormContext.Consumer>
-      {(value) => <span className="text-white">{value.firstName}</span>}
-    </FormContext.Consumer>
-  );
+  console.log("Guess what I just rerendered");
+  
+  return <span className="text-white">Wakaka</span>;
 }
 
 // JustAClass.contextType =

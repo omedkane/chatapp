@@ -1,5 +1,4 @@
 import "./authentication.scss";
-import { createContext } from "react";
 import { useForm } from "../../ui/components/PandaInput/PandaForm";
 
 interface SignUpForm {
@@ -8,21 +7,13 @@ interface SignUpForm {
   email: string;
   password: string;
 }
-const fieldMap: SignUpForm = {
-  email: "",
-  firstName: "",
-  lastName: "",
-  password: "",
-};
-
-// ! Try to get Consumer to work
-
-export const FormContext = createContext<SignUpForm>(fieldMap);
-
 export function AuthenticationScreen() {
-  console.log("do I rerender");
-
-  const { PandaForm, PandaInput, form } = useForm<SignUpForm>(FormContext);
+  const { PandaInput, FormConsumer, form } = useForm<SignUpForm>({
+    email: "",
+    firstName: "",
+    lastName: "",
+    password: "",
+  });
   // const [signUp, result] = AuthAPI.useLoginMutation({});
   // const useForm = () => {
   //   return PandaInput;
@@ -51,40 +42,41 @@ export function AuthenticationScreen() {
         </span>
       </div>
 
-      <PandaForm fieldMap={fieldMap}>
-        <div
-          className="input-group mt-6 flex flex-col gap-x-0 place-items-center lg:justify-start lg:items-start w-full portrait:mt-12"
-          style={{ gridArea: "form" }}>
-          <div id="basic-info-form" className="flex gap-4">
-            <PandaInput
-              name="firstName"
-              className=" md:w-48"
-              title="First name"
-              type="info"
-            />
-            <PandaInput
-              name="lastName"
-              className=" md:w-48"
-              title="Last name"
-              type="info"
-            />
-          </div>
-          <div
-            id="auth-inputs"
-            className="mt-6 flex flex-col w-full lg:w-1/2 gap-6 md:gap-6">
-            <PandaInput name="email" title="Email" type="email" />
-            <PandaInput name="password" title="Password" type="password" />
-          </div>
-          <button
-            onClick={() => {
-              console.log(form);
-            }}
-            id="submit-button"
-            className="mt-6 lg:mt-12 flex hakkunde rounded-full active:outline-none px-10 py-4">
-            Sign Up
-          </button>
+      <div
+        className="input-group mt-6 flex flex-col gap-x-0 place-items-center lg:justify-start lg:items-start w-full portrait:mt-12"
+        style={{ gridArea: "form" }}>
+        <FormConsumer field="email">
+          {(val) => <span className="font-bold text-white">{val}</span>}
+        </FormConsumer>
+        <div id="basic-info-form" className="flex gap-4">
+          <PandaInput
+            name="firstName"
+            className=" md:w-48"
+            title="First name"
+            type="info"
+          />
+          <PandaInput
+            name="lastName"
+            className=" md:w-48"
+            title="Last name"
+            type="info"
+          />
         </div>
-      </PandaForm>
+        <div
+          id="auth-inputs"
+          className="mt-6 flex flex-col w-full lg:w-1/2 gap-6 md:gap-6">
+          <PandaInput name="email" title="Email" type="email" />
+          <PandaInput name="password" title="Password" type="password" />
+        </div>
+        <button
+          onClick={() => {
+            console.log(form);
+          }}
+          id="submit-button"
+          className="mt-6 lg:mt-12 flex hakkunde rounded-full active:outline-none px-10 py-4">
+          Sign Up
+        </button>
+      </div>
     </div>
   );
 }
