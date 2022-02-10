@@ -1,0 +1,90 @@
+@keyframes vanish-panda {
+  50% {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    padding: 0;
+    opacity: 1;
+    transform: scale(1);
+  }
+  75% {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    padding: 0;
+    opacity: 0;
+    transform: scale(0);
+  }
+  100% {
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    padding: 0;
+    opacity: 0;
+    transform: scale(0);
+    margin: 0;
+  }
+}
+
+@keyframes vanish-input-box {
+  50% {
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    visibility: hidden;
+  }
+  to {
+    width: 0;
+    height: 0;
+    opacity: 0;
+    visibility: hidden;
+    padding: 0;
+  }
+}
+
+@keyframes show-panda {
+  25% {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    padding: 0;
+    opacity: 0;
+    transform: scale(0);
+    margin: var(--panda-margin);
+  }
+  50% {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    padding: 0;
+    opacity: 1;
+    transform: scale(1);
+    margin: var(--panda-margin);
+  }
+  100% {
+    width: var(--panda-width);
+    height: 4rem;
+    border-radius: 0.75rem;
+    padding: 0 1rem 0 0;
+    opacity: 1;
+    transform: scale(1);
+    margin: var(--panda-margin);
+  }
+}
+
+@keyframes show-input-box {
+  50% {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    opacity: 0;
+    visibility: hidden;
+  }
+  to {
+    width: 100%;
+    height: 100%;
+    padding: 1.25rem 0 1.25rem 1rem;
+    opacity: 1;
+    visibility: visible;
+  }
+}

@@ -1,0 +1,161 @@
+.PandaInput {
+	background-color: #323644;
+	padding-right: 1rem;
+	--dawidth: 12rem;
+	.input-box {
+	  padding: 1.25rem 0 1.25rem 1rem;
+	  transition: padding 0.35s linear;
+	  border-radius: inherit;
+	  #input-name {
+		//   color: #ffffffab;
+		font-size: 1rem;
+		font-weight: 500;
+		transition: font-size 0.35s linear;
+	  }
+	  input {
+		opacity: 0;
+		//   visibility: hidden;
+		transition: opacity 0.35s;
+		box-shadow: 0 0 0 30px #323644 inset !important;
+		-webkit-text-fill-color: white;
+		caret-color: white !important;
+	  }
+	  &.is-filled,
+	  &:focus-within,
+	  &:hover {
+		padding: 0.4rem 1rem 0rem 1rem;
+		#input-name {
+		  font-size: 0.8rem;
+		  font-weight: 500;
+		  color: #ffffff61;
+		}
+		input {
+		  opacity: 1;
+		  // visibility: visible;
+		  padding-bottom: 0.5rem;
+		}
+	  }
+	}
+  
+	&.vanishing {
+	  animation: vanish-panda 1.2s forwards;
+	  animation-delay: 0.25s;
+	  pointer-events: none;
+	  .input-box {
+		animation: vanish-input-box 0.5s forwards;
+	  }
+	}
+	&.vanished {
+	  width: 0;
+	  height: 0;
+	  border-radius: 50%;
+	  padding: 0;
+	  opacity: 0;
+	  transform: scale(0);
+	  margin: 0;
+	  .input-box {
+		width: 0;
+		height: 0;
+		opacity: 0;
+		visibility: hidden;
+		padding: 0;
+	  }
+	}
+	&.appearing {
+	  pointer-events: none;
+	  animation: show-panda 1.2s forwards;
+	  .input-box {
+		animation: show-input-box 0.5s forwards;
+		animation-delay: 0.95s;
+	  }
+	}
+  }
+  
+  @keyframes vanish-panda {
+	50% {
+	  width: 4rem;
+	  height: 4rem;
+	  border-radius: 50%;
+	  padding: 0;
+	  opacity: 1;
+	  transform: scale(1);
+	}
+	75% {
+	  width: 4rem;
+	  height: 4rem;
+	  border-radius: 50%;
+	  padding: 0;
+	  opacity: 0;
+	  transform: scale(0);
+	}
+	100% {
+	  width: 0;
+	  height: 0;
+	  border-radius: 50%;
+	  padding: 0;
+	  opacity: 0;
+	  transform: scale(0);
+	  margin: 0;
+	}
+  }
+  
+  @keyframes vanish-input-box {
+	50% {
+	  width: 100%;
+	  height: 100%;
+	  opacity: 0;
+	  visibility: hidden;
+	}
+	to {
+	  width: 0;
+	  height: 0;
+	  opacity: 0;
+	  visibility: hidden;
+	  padding: 0;
+	}
+  }
+  
+  @keyframes show-panda {
+	25% {
+	  width: 4rem;
+	  height: 4rem;
+	  border-radius: 50%;
+	  padding: 0;
+	  opacity: 0;
+	  transform: scale(0);
+	}
+	50% {
+	  width: 4rem;
+	  height: 4rem;
+	  border-radius: 50%;
+	  padding: 0;
+	  opacity: 1;
+	  transform: scale(1);
+	}
+	100% {
+	  width: 100%;
+	  height: 100%;
+	  border-radius: 0.75rem;
+	  padding: 0 1rem 0 0;
+	  opacity: 1;
+	  transform: scale(1);
+	}
+  }
+  
+  @keyframes show-input-box {
+	50% {
+	  width: 100%;
+	  height: 100%;
+	  padding: 0;
+	  opacity: 0;
+	  visibility: hidden;
+	}
+	to {
+	  width: 100%;
+	  height: 100%;
+	  padding: 1.25rem 0 1.25rem 1rem;
+	  opacity: 1;
+	  visibility: visible;
+	}
+  }
+  

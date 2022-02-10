@@ -1,0 +1,11 @@
+#TestComponent {
+	background-color: purple;
+	&.teint:hover {
+		animation: simpleAnime 0.5s infinite;
+	}
+}
+@keyframes simpleAnime {
+	100%{
+		background-color: red;
+	}
+}

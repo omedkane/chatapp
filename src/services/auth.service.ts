@@ -19,18 +19,33 @@ export const AuthService: IAuthService = {
     );
   },
 };
+interface UserRequestBody {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+}
 
 const AuthAPI = createApi({
   reducerPath: "rtkAuth",
-  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:3000/auth" }),
+  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:4000/" }),
   endpoints: (builder) => ({
-    login: builder.mutation<User, Partial<User> & Pick<User, "id">>({
-      query: (user: User) => ({
-        url: "auth",
+    signUp: builder.mutation<{ message: string }, UserRequestBody>({
+      query: (user: UserRequestBody) => ({
+        url: "api/users",
         method: "POST",
         body: user,
       }),
+    }),
+    signIn: builder.mutation<User, { email: string; password: string }>({
+      query: (credentials) => ({
+        url: "/auth",
+        method: "POST",
+        body: credentials,
+      }),
       transformResponse: (response) => {
+        console.log(response);
+
         const res = response as {
           id: string;
           avatar: string;

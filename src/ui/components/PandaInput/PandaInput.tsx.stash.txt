@@ -1,0 +1,160 @@
+import "./PandaInput.scss";
+import {
+  AnimationEvent,
+  ComponentType,
+  Fragment,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { AiOutlineEye } from "react-icons/ai";
+import { HiMail } from "react-icons/hi";
+import { FaUserEdit } from "react-icons/fa";
+
+interface PandaInputProps<T = any> {
+  name: Extract<keyof T, string>;
+  title: string;
+  type: "email" | "info" | "password";
+  className?: string;
+  remotelyDisabled?: boolean;
+}
+
+type PandaInputIcons = {
+  [key in PandaInputProps["type"]]: ComponentType;
+};
+
+const InputIcons: PandaInputIcons = {
+  email: () => <HiMail size={24} />,
+  info: () => <FaUserEdit size={24} />,
+  password: () => <AiOutlineEye size={24} />,
+};
+
+export function usePandaInput<Form>(
+  setField: (field: string, value: string | number) => void
+) {
+  function PandaInput({
+    name,
+    title,
+    type,
+    remotelyDisabled,
+    className = "",
+  }: PandaInputProps<Form>) {
+    console.log(`PandaInput Rerender ${name}`);
+    const enum PandaStatus {
+      Vanishing,
+      Vanished,
+      Appearing,
+      Appeared,
+    }
+
+    const InputIcon = InputIcons[type];
+
+    const [isFilled, setIsFilled] = useState(false);
+    // const [isDisabled, setIsDisabled] = useState(false);
+    const [status, setStatus] = useState<PandaStatus>(PandaStatus.Appeared);
+    const [animationClasses, setAnimationClasses] = useState("");
+    const inputRef = useRef<HTMLInputElement>(null);
+    const pandaInputRef = useRef<HTMLDivElement>(null);
+    const setForm = (value: string) => setField(name, value);
+
+    useEffect(() => {
+      if (inputRef.current !== null) setForm(inputRef.current.value);
+    });
+
+    // useEffect(() => {
+    //   if (remotelyDisabled !== undefined) {
+    //     if (remotelyDisabled && status === PandaStatus.Appeared) {
+    //       disableMe();
+    //     } else if (status === PandaStatus.Vanished) {
+    //       enableMe();
+    //     }
+    //   }
+    // }, [remotelyDisabled]);
+
+    const onChange = (element: React.ChangeEvent<HTMLInputElement>) => {
+      const value = element.target.value;
+      setForm(value);
+
+      if (value !== "") {
+        setIsFilled(true);
+      } else setIsFilled(false);
+    };
+
+    const disableMe = () => {
+      pandaInputRef.current?.classList.add("vanished");
+
+      const onAnimationEnd = (event: globalThis.AnimationEvent) => {
+        if (event.animationName === "vanish-panda") {
+          // pandaInputRef.current?.classList.add("vanished");
+          // pandaInputRef.current?.classList.remove("vanishing");
+          // setAnimationClasses("vanished");
+          // setStatus(PandaStatus.Vanished);
+
+          pandaInputRef.current?.removeEventListener(
+            "animationend",
+            onAnimationEnd
+          );
+        }
+      };
+      pandaInputRef.current?.addEventListener("animationend", onAnimationEnd);
+    };
+
+    const enableMe = () => {
+      setStatus(PandaStatus.Appearing);
+      setAnimationClasses("appearing");
+      // pandaInputRef.current?.classList.add("appearing");
+      const onAnimationEnd = (event: globalThis.AnimationEvent) => {
+        if (event.animationName === "show-input-box") {
+          // pandaInputRef.current?.classList.remove("vanished", "appearing");
+          setAnimationClasses("");
+
+          pandaInputRef.current?.removeEventListener(
+            "animationend",
+            onAnimationEnd
+          );
+        }
+      };
+      pandaInputRef.current?.addEventListener("animationend", onAnimationEnd);
+    };
+
+    // const onAnimationEnd = (event: AnimationEvent<HTMLDivElement>) => {
+    //   if (event.animationName === "vanish-panda") {
+    //     disableMe();
+    //   } else if (event.animationName === "show-input-box") {
+    //     pandaInputRef.current?.classList.remove("vanished", "appearing");
+    //   }
+    // };
+
+    return status === PandaStatus.Vanished ? (
+      <Fragment></Fragment>
+    ) : (
+      <div className={`panda-input-container h-16 ${className}`}>
+        <div
+          ref={pandaInputRef}
+          className={`PandaInput flex rounded-xl hw-full hakkunde ${animationClasses}`}>
+          <div
+            className={`input-box rounded-xl flex flex-col hw-full ${
+              isFilled ? "is-filled" : ""
+            }`}>
+            <span id="input-name" className="text-gray-300">
+              {title}
+            </span>
+            <input
+              type={type === "password" ? type : "text"}
+              onChange={onChange}
+              ref={inputRef}
+              className="hw-full bg-transparent autofill:bg-black outline-none placeholder:font-bold"
+            />
+          </div>
+          <div className="h-full flex hakkunde text-gray-300">
+            <div onClick={() => disableMe()}>
+              <InputIcon />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return PandaInput;
+}

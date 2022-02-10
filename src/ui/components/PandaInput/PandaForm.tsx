@@ -4,13 +4,30 @@ import { usePandaInput } from "./PandaInput";
 import { Subject } from "rxjs";
 import { AnyObject } from "immer/dist/internal";
 
-export function useForm<Form extends object>(fields: Form) {
-  type NumString = string | number;
-  type Emission = { field: string; value: NumString };
-  const subject = new Subject<Emission>();
+export type Emission = { field: string; value: NumString };
+type RemoteOperationType = "disable" | "enable" | "switch";
+export type ControlNotification = {
+  field: string;
+  operation: RemoteOperationType;
+  callback?: () => void;
+};
+export type NumString = string | number;
+
+export function useForm<Form>(fields: Form) {
+  const updateSubject = new Subject<Emission>();
+  const inputController = new Subject<ControlNotification>();
+  
+  type Fields = keyof Form;
+  type RemodeledFieldMap = Form & {
+    notify: (_: {
+      operation: RemoteOperationType;
+      fields: Fields[];
+      callback?: () => void;
+    }) => void;
+  };
 
   interface ConsumerProps {
-    field: keyof Form;
+    field: Fields;
     children: (value: any) => ReactElement;
   }
 
@@ -18,7 +35,7 @@ export function useForm<Form extends object>(fields: Form) {
     const [value, setValue] = useState<NumString>("");
 
     useEffect(() => {
-      const subscription = subject.subscribe({
+      const subscription = updateSubject.subscribe({
         next: (val: Emission) => {
           if (val.field === props.field) {
             console.log(val.field);
@@ -36,20 +53,42 @@ export function useForm<Form extends object>(fields: Form) {
     return <Child />;
   }
 
-  const proxy = new Proxy(fields, {
+  const remodeledFieldMap: RemodeledFieldMap = {
+    ...fields,
+    notify: ({ operation, fields, callback }) => {
+      let doneCount = 0;
+      const fieldsLength = fields.length;
+      fields.forEach((field) => {
+        inputController?.next({
+          field: field as string,
+          operation,
+          callback:
+            callback === undefined
+              ? undefined
+              : () => {
+                  if (++doneCount === fieldsLength) {
+                    callback();
+                  }
+                },
+        });
+      });
+    },
+  };
+  const proxy = new Proxy<typeof remodeledFieldMap>(remodeledFieldMap, {
     set: (fieldMap: AnyObject, field: string, value: NumString) => {
       fieldMap[field] = value;
-      subject.next({ field, value });
+      updateSubject.next({ field, value });
       return true;
     },
   });
 
   const setField = (field: string, value: NumString) => {
-    proxy[field] = value;
+    const obj = proxy as AnyObject;
+    obj[field] = value;
   };
 
   const [{ FormConsumer, InputComponent, form }] = useState({
-    InputComponent: usePandaInput<Form>(setField),
+    InputComponent: usePandaInput<Form>(setField, inputController),
     FormConsumer: Consumer,
     form: proxy,
   });
