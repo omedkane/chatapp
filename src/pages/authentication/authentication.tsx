@@ -1,44 +1,9 @@
+import { useAuthenticationScreenModel } from "./authentication.model";
 import "./authentication.scss";
-import { useForm } from "../../ui/components/PandaInput/PandaForm";
-import AuthAPI from "../../services/auth.service";
-import { useState } from "react";
-import { useModal } from "../../ui/components/Modal/Modal";
-import Spinner from "react-spinkit";
-import { LoadingModal } from "../../ui/components/Modal/common/Loading.modal";
 
-interface SignUpForm {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-}
 export function AuthenticationScreen() {
-  const [signUp, result] = AuthAPI.useSignUpMutation({});
-
-  const [isLogin, setIsLogin] = useState(false);
-
-  const { Modal, openModal, closeModal } = useModal();
-
-  const { PandaInput, form } = useForm<SignUpForm>({
-    email: "",
-    firstName: "",
-    lastName: "",
-    password: "",
-  });
-
-  const switchForm = () => {
-    if (isLogin) setIsLogin(!isLogin);
-
-    form.notify({
-      fields: ["firstName", "lastName"],
-      operation: "switch",
-      callback: isLogin
-        ? undefined
-        : () => {
-            setIsLogin(!isLogin);
-          },
-    });
-  };
+  const { Modal, PandaInput, isLogin, switchForm, signUp } =
+    useAuthenticationScreenModel();
   return (
     <div
       id="authentication-screen"
@@ -97,18 +62,9 @@ export function AuthenticationScreen() {
           <PandaInput name="password" title="Password" type="password" />
         </div>
         <button
-          onClick={async () => {
-            // const payload = await signUp({
-            //   firstName: form.firstName,
-            //   lastName: form.lastName,
-            //   email: form.email,
-            //   password: form.password,
-            // });
-
-            openModal(<LoadingModal />, () => {
-              console.log("Yup Yup Yup");
-            });
-
+          onClick={() => {
+            signUp();
+            // if(result)
             // console.log(payload);
           }}
           id="submit-button"

@@ -17,12 +17,12 @@
     grid-row: 1 / -1;
     z-index: 0;
     background-color: rgba(0, 0, 0, 0);
-    // backdrop-filter: blur(6px);
-    animation: overlay-appear 0.5s forwards;
+    &.appearing {
+      animation: overlay-appear 0.5s forwards;
+    }
     &.vanishing {
       pointer-events: none;
       animation: overlay-vanish 0.5s forwards;
-      animation-delay: 0.5s;
     }
   }
   #actual-content {
@@ -34,14 +34,18 @@
         animation: content-vanish 0.5s forwards;
       }
     }
-    > *:first-child {
-      animation: content-appear 0.5s forwards;
+    &.appearing {
+      > *:first-child {
+        animation: content-appear 0.5s forwards;
+      }
     }
   }
 }
-// ! Do the animation out now !
 @keyframes overlay-appear {
-  100% {
+  from {
+    background-color: rgba(0, 0, 0, 0);
+  }
+  to {
     background-color: rgba(0, 0, 0, 0.5);
   }
 }

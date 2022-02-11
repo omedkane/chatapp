@@ -34,7 +34,7 @@ export function useModal() {
 
     const modalRef = useRef<HTMLDivElement>(null);
 
-    function openMe(_child: ReactElement, onOpen?: VoidFunction) {
+    const openMe = (_child: ReactElement, onOpen?: VoidFunction) => {
       setConfig({ visible: true, child: _child, animationStatus: "appearing" });
 
       globalThis.requestAnimationFrame(() => {
@@ -52,7 +52,7 @@ export function useModal() {
           onOpen();
         });
       });
-    }
+    };
 
     const closeMe = useCallback(
       (onClose?: VoidFunction) => {
@@ -61,10 +61,13 @@ export function useModal() {
         }
         const modal = modalRef.current;
         const parent = modal.parentElement;
+        // console.log(modal);
 
         setConfig({ ...config, animationStatus: "vanishing" });
 
         EventHelper.setAnimationEndCallback(modal, "overlay-vanish", () => {
+          console.log("is this thing on ?");
+
           setConfig({
             ...config,
             visible: false,
@@ -79,7 +82,6 @@ export function useModal() {
       },
       [config]
     );
-
     useEffect(() => {
       const subscription = modalNotifier.subscribe(
         (notification: ModalNotification) => {
@@ -97,6 +99,7 @@ export function useModal() {
         subscription.unsubscribe();
       };
     }, [closeMe]);
+
     const Child = () => config.child as ReactElement;
     return !config.visible ? (
       <Fragment />
@@ -113,9 +116,9 @@ export function useModal() {
       </div>
     );
   }
-  // const [{ Modal: _Modal }] = useState({ Modal });
+  // const [{ Modal, openModal, closeModal }] = useState();
   return {
-    Modal: Modal,
+    Modal,
     openModal: (child: ReactElement, callback?: VoidFunction) => {
       modalNotifier.next({
         operation: "open",
