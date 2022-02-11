@@ -1,3 +1,4 @@
+import { EventHelper } from "@core/helpers/event.helper";
 import {
   Fragment,
   ReactElement,
@@ -47,14 +48,9 @@ export function useModal() {
 
         if (onOpen === undefined) return;
 
-        const onAnimationEnd = (event: AnimationEvent) => {
-          if (event.animationName === "content-appear") {
-            modal.removeEventListener("animationend", onAnimationEnd);
-            onOpen();
-          }
-        };
-
-        modal.addEventListener("animationend", onAnimationEnd);
+        EventHelper.setAnimationEndCallback(modal, "content-appear", () => {
+          onOpen();
+        });
       });
     }
 
@@ -68,24 +64,18 @@ export function useModal() {
 
         setConfig({ ...config, animationStatus: "vanishing" });
 
-        const onAnimationEnd = (event: AnimationEvent) => {
-          if (event.animationName === "overlay-vanish") {
-            modal.removeEventListener("animationend", onAnimationEnd);
+        EventHelper.setAnimationEndCallback(modal, "overlay-vanish", () => {
+          setConfig({
+            ...config,
+            visible: false,
+          });
+          globalThis.requestAnimationFrame(() => {
+            if (parent !== null && parent !== undefined)
+              parent.style.position = "";
 
-            setConfig({
-              ...config,
-              visible: false,
-            });
-            globalThis.requestAnimationFrame(() => {
-              if (parent !== null && parent !== undefined)
-                parent.style.position = "";
-
-              if (onClose !== undefined) onClose();
-            });
-          }
-        };
-
-        modal.addEventListener("animationend", onAnimationEnd);
+            if (onClose !== undefined) onClose();
+          });
+        });
       },
       [config]
     );

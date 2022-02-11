@@ -14,6 +14,7 @@ import { FaUserEdit } from "react-icons/fa";
 // @ts-ignore
 import { Subject } from "rxjs";
 import { ControlNotification } from "./PandaForm";
+import { EventHelper } from "@core/helpers/event.helper";
 
 interface PandaInputProps<T = any> {
   name: Extract<keyof T, string>;
@@ -123,13 +124,12 @@ export function usePandaInput<Form>(
           classes: "vanishing",
         });
 
-        const onAnimationEnd = (event: globalThis.AnimationEvent) => {
-          if (event.animationName === "vanish-panda") {
-            pandaInputRef.current?.removeEventListener(
-              "animationend",
-              onAnimationEnd
-            );
+        if (pandaInputRef.current === null) return;
 
+        EventHelper.setAnimationEndCallback(
+          pandaInputRef.current,
+          "vanish-panda",
+          (event) => {
             if (_currentWidth) {
               setAnimationProps({
                 ...animationProps,
@@ -145,8 +145,7 @@ export function usePandaInput<Form>(
               });
             }
           }
-        };
-        pandaInputRef.current?.addEventListener("animationend", onAnimationEnd);
+        );
       },
       [animationProps, isAnimating, onDisabled]
     );
@@ -166,29 +165,24 @@ export function usePandaInput<Form>(
           } as CSSProperties,
         });
 
-        const onAnimationEnd = (event: globalThis.AnimationEvent) => {
-          if (event.animationName === "show-input-box") {
-            pandaInputRef.current?.removeEventListener(
-              "animationend",
-              onAnimationEnd
-            );
-
-            setAnimationProps({
-              ...animationProps,
-              status: PandaStatus.Appeared,
-              classes: "",
-              style: {},
-            });
-            globalThis.requestAnimationFrame(() => {
-              if (onEnabled !== undefined) onEnabled();
-              if (callback !== undefined) callback();
-            });
-          }
-        };
         requestAnimationFrame(() => {
-          pandaInputRef.current?.addEventListener(
-            "animationend",
-            onAnimationEnd
+          if (pandaInputRef.current === null) return;
+
+          EventHelper.setAnimationEndCallback(
+            pandaInputRef.current,
+            "show-input-box",
+            (event) => {
+              setAnimationProps({
+                ...animationProps,
+                status: PandaStatus.Appeared,
+                classes: "",
+                style: {},
+              });
+              globalThis.requestAnimationFrame(() => {
+                if (onEnabled !== undefined) onEnabled();
+                if (callback !== undefined) callback();
+              });
+            }
           );
         });
       },
