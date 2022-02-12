@@ -3,6 +3,7 @@ import {
   ComponentType,
   CSSProperties,
   Fragment,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -98,93 +99,106 @@ export function usePandaInput<Form>(
       } else setIsFilled(false);
     };
 
-    const isAnimating = () =>
-      [PandaStatus.Appearing, PandaStatus.Vanishing].includes(
-        animationProps.status
-      );
+    const isAnimating = useCallback(
+      () =>
+        [PandaStatus.Appearing, PandaStatus.Vanishing].includes(
+          animationProps.status
+        ),
+      [animationProps.status]
+    );
 
-    const disableMe = (callback?: () => void) => {
-      if (
-        animationProps.status === PandaStatus.Vanished ||
-        isAnimating() ||
-        pandaInputRef.current === null
-      )
-        return;
+    const disableMe = useCallback(
+      (callback?: () => void) => {
+        if (
+          animationProps.status === PandaStatus.Vanished ||
+          isAnimating() ||
+          pandaInputRef.current === null
+        )
+          return;
 
-      const { width: _currentWidth, margin: _currentMargin } =
-        globalThis.getComputedStyle(pandaInputRef.current);
+        const { width: _currentWidth, margin: _currentMargin } =
+          globalThis.getComputedStyle(pandaInputRef.current);
 
-      setAnimationProps({
-        ...animationProps,
-        classes: "vanishing",
-      });
+        setAnimationProps({
+          ...animationProps,
+          classes: "vanishing",
+        });
 
-      if (pandaInputRef.current === null) return;
-
-      EventHelper.setAnimationEndCallback(
-        pandaInputRef.current,
-        "vanish-panda",
-        (event) => {
-          if (_currentWidth) {
-            setAnimationProps({
-              ...animationProps,
-              savedWidth: _currentWidth,
-              savedMargin: _currentMargin,
-              status: PandaStatus.Vanished,
-              classes: "vanished",
-            });
-
-            globalThis.requestAnimationFrame(() => {
-              if (onDisabled !== undefined) onDisabled();
-              if (callback !== undefined) callback();
-            });
-          }
-        }
-      );
-    };
-
-    const enableMe = (callback?: () => void) => {
-      if (animationProps.status === PandaStatus.Appeared || isAnimating())
-        return;
-
-      setAnimationProps({
-        ...animationProps,
-        status: PandaStatus.Appearing,
-        classes: "vanished appearing",
-        style: {
-          "--panda-width": animationProps.savedWidth,
-          "--panda-margin": animationProps.savedMargin,
-        } as CSSProperties,
-      });
-
-      requestAnimationFrame(() => {
         if (pandaInputRef.current === null) return;
 
         EventHelper.setAnimationEndCallback(
           pandaInputRef.current,
-          "show-input-box",
+          "vanish-panda",
           (event) => {
-            setAnimationProps({
-              ...animationProps,
-              status: PandaStatus.Appeared,
-              classes: "",
-              style: {},
-            });
-            globalThis.requestAnimationFrame(() => {
-              if (onEnabled !== undefined) onEnabled();
-              if (callback !== undefined) callback();
-            });
+            if (_currentWidth) {
+              setAnimationProps({
+                ...animationProps,
+                savedWidth: _currentWidth,
+                savedMargin: _currentMargin,
+                status: PandaStatus.Vanished,
+                classes: "vanished",
+              });
+
+              globalThis.requestAnimationFrame(() => {
+                if (onDisabled !== undefined) onDisabled();
+                if (callback !== undefined) callback();
+              });
+            }
           }
         );
-      });
-    };
-    const switchMe = (callback?: () => void) => {
-      if (isAnimating()) return;
+      },
+      [animationProps, isAnimating, onDisabled]
+    );
 
-      if (animationProps.status === PandaStatus.Appeared) disableMe(callback);
-      else if (animationProps.status === PandaStatus.Vanished)
-        enableMe(callback);
-    };
+    const enableMe = useCallback(
+      (callback?: () => void) => {
+        if (animationProps.status === PandaStatus.Appeared || isAnimating())
+          return;
+
+        setAnimationProps({
+          ...animationProps,
+          status: PandaStatus.Appearing,
+          classes: "vanished appearing",
+          style: {
+            "--panda-width": animationProps.savedWidth,
+            "--panda-margin": animationProps.savedMargin,
+          } as CSSProperties,
+        });
+
+        requestAnimationFrame(() => {
+          if (pandaInputRef.current === null) return;
+
+          EventHelper.setAnimationEndCallback(
+            pandaInputRef.current,
+            "show-input-box",
+            (event) => {
+              setAnimationProps({
+                ...animationProps,
+                status: PandaStatus.Appeared,
+                classes: "",
+                style: {},
+              });
+              globalThis.requestAnimationFrame(() => {
+                if (onEnabled !== undefined) onEnabled();
+                if (callback !== undefined) callback();
+              });
+            }
+          );
+        });
+      },
+      [animationProps, isAnimating, onEnabled]
+    );
+
+    const switchMe = useCallback(
+      (callback?: () => void) => {
+        if (isAnimating()) return;
+
+        if (animationProps.status === PandaStatus.Appeared) disableMe(callback);
+        else if (animationProps.status === PandaStatus.Vanished)
+          enableMe(callback);
+      },
+      [animationProps.status, disableMe, enableMe, isAnimating]
+    );
 
     useEffect(() => {
       const subscription = subject.subscribe(
@@ -207,8 +221,7 @@ export function usePandaInput<Form>(
       return () => {
         subscription.unsubscribe();
       };
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [name]);
+    }, [disableMe, enableMe, name, switchMe]);
 
     return animationProps.status === PandaStatus.Vanished ? (
       <Fragment />

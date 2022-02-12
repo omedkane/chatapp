@@ -1,0 +1,9 @@
+.resizable-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: width 0.2s, height 0.2s, opacity 0.5s;
+  transition-timing-function: linear;
+}

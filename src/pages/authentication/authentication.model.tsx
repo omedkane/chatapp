@@ -16,6 +16,7 @@ export function useAuthenticationScreenModel() {
   const [signUp] = AuthAPI.useSignUpMutation({});
 
   const [isLogin, setIsLogin] = useState(false);
+  const [hasSignedUp, setHasSignedUp] = useState(false);
 
   const { Modal, openModal, closeModal } = useModal();
 
@@ -41,34 +42,36 @@ export function useAuthenticationScreenModel() {
   };
 
   const _signUp = async () => {
-    openModal(<LoadingModal message="Creating user..." />);
-    setTimeout(async () => {
-      await signUp({
-        firstName: form.firstName,
-        lastName: form.lastName,
-        email: form.email,
-        password: form.password,
-      })
-        .then(() => {
-          closeModal(() => {
-            openModal(
-              <SuccessModal message="Successfully Registered !" />,
-              () => {
-                switchForm();
-              }
-            );
-          });
-        })
-        .catch(() => {
-          closeModal(() => {
-            openModal(<FailureModal message="An error occured !" />);
-          });
-        });
-    }, 2000);
+    // openModal(<LoadingModal message="Creating user..." />);
+    // setTimeout(async () => {
+    //   await signUp({
+    //     firstName: form.firstName,
+    //     lastName: form.lastName,
+    //     email: form.email,
+    //     password: form.password,
+    //   })
+    //     .then(() => {
+    //       closeModal(() => {
+    //         openModal(
+    //           <SuccessModal message="Successfully Registered !" />,
+    //           () => {
+    //             switchForm();
+    setHasSignedUp(!hasSignedUp);
+    //           }
+    //         );
+    //       });
+    //     })
+    //     .catch(() => {
+    //       closeModal(() => {
+    //         openModal(<FailureModal message="An error occured !" />);
+    //       });
+    //     });
+    // }, 2000);
   };
+
   return {
     signUp: _signUp,
-    isLogin,
+    switches: { isLogin, hasSignedUp },
     Modal,
     switchForm,
     PandaInput,
