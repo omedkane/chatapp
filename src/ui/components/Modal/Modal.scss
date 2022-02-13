@@ -1,3 +1,5 @@
+@import "./ModalAnimations.scss";
+
 .Modal {
   position: absolute;
   top: 0;
@@ -17,6 +19,9 @@
     grid-row: 1 / -1;
     z-index: 0;
     background-color: rgba(0, 0, 0, 0);
+    &.appeared {
+      background-color: rgba(0, 0, 0, 0.5);
+    }
     &.appearing {
       animation: overlay-appear 0.5s forwards;
     }
@@ -24,77 +29,31 @@
       pointer-events: none;
       animation: overlay-vanish 0.5s forwards;
     }
+    &.vanished {
+      background-color: rgba(0, 0, 0, 0);
+    }
   }
   #actual-content {
     grid-column: 2;
     grid-row: 2;
     z-index: 1;
-    &.vanishing {
-      > *:first-child {
-        animation: content-vanish 0.5s forwards;
-      }
+    &.appeared > *:first-child {
+      opacity: 1;
+      border-radius: 2rem;
+      transform: scale(1);
     }
-    &.appearing {
-      > *:first-child {
-        animation: content-appear 0.5s forwards;
-      }
+    &.vanishing > *:first-child {
+      animation: content-vanish 0.5s forwards;
     }
-  }
-}
-@keyframes overlay-appear {
-  from {
-    background-color: rgba(0, 0, 0, 0);
-  }
-  to {
-    background-color: rgba(0, 0, 0, 0.5);
-  }
-}
 
-@keyframes content-appear {
-  from {
-    opacity: 0;
-    transform: scale(0);
-    border-radius: 75%;
-  }
-  35% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.2);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-    border-radius: 2rem;
-  }
-}
+    &.appearing > *:first-child {
+      animation: content-appear 0.5s forwards;
+    }
 
-@keyframes overlay-vanish {
-  from {
-    background-color: rgba(0, 0, 0, 0.5);
-  }
-  to {
-    background-color: rgba(0, 0, 0, 0);
-  }
-}
-
-@keyframes content-vanish {
-  from {
-    opacity: 1;
-    border-radius: 2rem;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.2);
-  }
-  65% {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-    border-radius: 50%;
-    transform: scale(0.1);
+    &.vanished > *:first-child {
+      opacity: 0;
+      transform: scale(0);
+      border-radius: 75%;
+    }
   }
 }

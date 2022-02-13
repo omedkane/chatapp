@@ -5,7 +5,7 @@ import { Subject } from "rxjs";
 import { AnyObject } from "immer/dist/internal";
 
 export type Emission = { field: string; value: NumString };
-type RemoteOperationType = "disable" | "enable" | "switch";
+type RemoteOperationType = "disable" | "enable" | "switch" | "clear";
 export type ControlNotification = {
   field: string;
   operation: RemoteOperationType;
@@ -16,12 +16,12 @@ export type NumString = string | number;
 export function useForm<Form>(fields: Form) {
   const updateSubject = new Subject<Emission>();
   const inputController = new Subject<ControlNotification>();
-  
+
   type Fields = keyof Form;
   type RemodeledFieldMap = Form & {
     notify: (_: {
       operation: RemoteOperationType;
-      fields: Fields[];
+      fields: Fields[] | ["*"];
       callback?: () => void;
     }) => void;
   };
@@ -58,7 +58,7 @@ export function useForm<Form>(fields: Form) {
     notify: ({ operation, fields, callback }) => {
       let doneCount = 0;
       const fieldsLength = fields.length;
-      fields.forEach((field) => {
+      fields.forEach((field: keyof Form | "*") => {
         inputController?.next({
           field: field as string,
           operation,

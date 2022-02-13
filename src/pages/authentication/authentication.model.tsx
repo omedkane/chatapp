@@ -1,6 +1,7 @@
 import { useState } from "react";
 import AuthAPI from "../../services/auth.service";
 import { FailureModal } from "../../ui/components/Modal/common/failure.modal";
+import { InfoModal } from "../../ui/components/Modal/common/info.modal";
 import { LoadingModal } from "../../ui/components/Modal/common/loading.modal";
 import { SuccessModal } from "../../ui/components/Modal/common/success.modal";
 import { useModal } from "../../ui/components/Modal/Modal";
@@ -42,31 +43,46 @@ export function useAuthenticationScreenModel() {
   };
 
   const _signUp = async () => {
-    // openModal(<LoadingModal message="Creating user..." />);
-    // setTimeout(async () => {
-    //   await signUp({
-    //     firstName: form.firstName,
-    //     lastName: form.lastName,
-    //     email: form.email,
-    //     password: form.password,
-    //   })
-    //     .then(() => {
-    //       closeModal(() => {
-    //         openModal(
-    //           <SuccessModal message="Successfully Registered !" />,
-    //           () => {
-    //             switchForm();
-    setHasSignedUp(!hasSignedUp);
-    //           }
-    //         );
-    //       });
-    //     })
-    //     .catch(() => {
-    //       closeModal(() => {
-    //         openModal(<FailureModal message="An error occured !" />);
-    //       });
-    //     });
-    // }, 2000);
+    openModal(<LoadingModal message="Creating user..." />);
+    setTimeout(async () => {
+      await signUp({
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        password: form.password,
+      })
+        .unwrap()
+        .then(() => {
+          closeModal(() => {
+            openModal(
+              <SuccessModal message="Successfully Registered !" />,
+              () => {
+                switchForm();
+                setHasSignedUp(!hasSignedUp);
+              },
+              () => {
+                openModal(
+                  <InfoModal message="Please sign in to your account, to start" />,
+                  undefined,
+                  () => {
+                    form.notify({
+                      fields: ["*"],
+                      operation: "clear",
+                    });
+                  }
+                );
+              }
+            );
+          });
+        })
+        .catch((error) => {
+          const errorMessage = error.data.error ?? error.data.message;
+
+          closeModal(() => {
+            openModal(<FailureModal message={errorMessage} />);
+          });
+        });
+    }, 2000);
   };
 
   return {

@@ -6,7 +6,7 @@ export function FailureModal({ message }: { message?: string }) {
       <div className="flex hakkunde h-12 w-12 radius-1/2 bg-orangered">
         <BsX color="white" size={24} />
       </div>
-      <span className="mt-6 font-medium">{message ?? "Operation Failed"}</span>
+      <span className="mt-6 font-medium">{message ?? "An error occurred !"}</span>
     </div>
   );
 }

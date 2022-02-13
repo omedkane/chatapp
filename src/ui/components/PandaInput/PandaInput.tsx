@@ -59,7 +59,11 @@ export function usePandaInput<Form>(
     const InputIcon = InputIcons[type];
 
     const [isFilled, setIsFilled] = useState(false);
-    const setForm = (value: string) => setField(name, value);
+
+    const setForm = useCallback(
+      (value: string) => setField(name, value),
+      [name]
+    );
 
     const [animationProps, setAnimationProps] = useState({
       status: PandaStatus.Appeared,
@@ -90,14 +94,24 @@ export function usePandaInput<Form>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [remotelyDisabled]);
 
-    const onChange = (element: React.ChangeEvent<HTMLInputElement>) => {
-      const value = element.target.value;
-      setForm(value);
+    const onChange = useCallback(
+      (
+        element?: React.ChangeEvent<HTMLInputElement>,
+        externalValue?: string
+      ) => {
+        const value =
+          element !== undefined ? element.target.value : externalValue;
 
-      if (value !== "") {
-        setIsFilled(true);
-      } else setIsFilled(false);
-    };
+        if (value === undefined) return;
+
+        setForm(value);
+
+        if (value !== "") {
+          setIsFilled(true);
+        } else setIsFilled(false);
+      },
+      [setForm]
+    );
 
     const isAnimating = useCallback(
       () =>
@@ -199,11 +213,22 @@ export function usePandaInput<Form>(
       },
       [animationProps.status, disableMe, enableMe, isAnimating]
     );
+    const clearMe = useCallback(
+      (callback?: VoidFunction) => {
+        if (inputRef.current !== null) {
+          inputRef.current.value = "";
+          onChange(undefined, "");
+        }
+
+        if (callback !== undefined) callback();
+      },
+      [onChange]
+    );
 
     useEffect(() => {
       const subscription = subject.subscribe(
         (notification: ControlNotification) => {
-          if (notification.field !== name) return;
+          if (notification.field !== name && notification.field !== "*") return;
 
           switch (notification.operation) {
             case "disable":
@@ -215,13 +240,16 @@ export function usePandaInput<Form>(
             case "switch":
               switchMe(notification.callback);
               break;
+            case "clear":
+              clearMe(notification.callback);
+              break;
           }
         }
       );
       return () => {
         subscription.unsubscribe();
       };
-    }, [disableMe, enableMe, name, switchMe]);
+    }, [clearMe, disableMe, enableMe, name, switchMe]);
 
     return animationProps.status === PandaStatus.Vanished ? (
       <Fragment />

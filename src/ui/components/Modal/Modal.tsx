@@ -1,3 +1,5 @@
+import { AnimationStatus } from "@core/enum/animation.enum";
+import { runAsync, runAsyncArr } from "@core/functions/misc";
 import { EventHelper } from "@core/helpers/event.helper";
 import {
   Fragment,
@@ -13,29 +15,40 @@ import "./Modal.scss";
 
 export function useModal() {
   type ModalNotification =
-    | { operation: "open"; child: ReactElement; callback?: VoidFunction }
+    | {
+        operation: "open";
+        child: ReactElement;
+        callback?: VoidFunction;
+        onClose?: VoidFunction;
+      }
     | { operation: "close"; callback?: VoidFunction };
 
   const modalNotifier = new Subject<ModalNotification>();
+  let scheduledOnCloseCallback: VoidFunction | null;
 
-  interface ModalProps {
-    className?: string;
-  }
-  function Modal({ className }: ModalProps) {
+  function _Modal() {
     type ModalConfig = {
       child?: ReactElement;
       visible: boolean;
-      animationStatus: "appearing" | "vanishing";
+      animationStatus: AnimationStatus;
     };
     const [config, setConfig] = useState<ModalConfig>({
       visible: false,
-      animationStatus: "appearing",
+      animationStatus: AnimationStatus.Appearing,
     });
 
     const modalRef = useRef<HTMLDivElement>(null);
 
-    const openMe = (_child: ReactElement, onOpen?: VoidFunction) => {
-      setConfig({ visible: true, child: _child, animationStatus: "appearing" });
+    const openMe = (
+      _child: ReactElement,
+      onOpen?: VoidFunction,
+      onClose?: VoidFunction
+    ) => {
+      setConfig({
+        visible: true,
+        child: _child,
+        animationStatus: AnimationStatus.Appearing,
+      });
 
       globalThis.requestAnimationFrame(() => {
         const modal = modalRef.current;
@@ -46,14 +59,20 @@ export function useModal() {
         parent.style.position = "relative";
         parent.style.overflow = "hidden";
 
-        if (onOpen === undefined) return;
-
         EventHelper.setAnimationEndCallback(modal, "content-appear", () => {
-          onOpen();
+          setConfig({
+            // ...config,
+            visible: true,
+            child: _child,
+            animationStatus: AnimationStatus.Appeared,
+          });
+          runAsync(onOpen);
+          if (onClose !== undefined) {
+            scheduledOnCloseCallback = onClose;
+          }
         });
       });
     };
-
     const closeMe = useCallback(
       (onClose?: VoidFunction) => {
         if (modalRef.current === null) {
@@ -61,9 +80,8 @@ export function useModal() {
         }
         const modal = modalRef.current;
         const parent = modal.parentElement;
-        // console.log(modal);
 
-        setConfig({ ...config, animationStatus: "vanishing" });
+        setConfig({ ...config, animationStatus: AnimationStatus.Vanishing });
 
         EventHelper.setAnimationEndCallback(modal, "overlay-vanish", () => {
           console.log("is this thing on ?");
@@ -71,23 +89,33 @@ export function useModal() {
           setConfig({
             ...config,
             visible: false,
+            animationStatus: AnimationStatus.Vanished,
           });
           globalThis.requestAnimationFrame(() => {
             if (parent !== null && parent !== undefined)
               parent.style.position = "";
 
-            if (onClose !== undefined) onClose();
+            runAsyncArr([onClose, scheduledOnCloseCallback], () => {
+              scheduledOnCloseCallback = null;
+            });
           });
         });
       },
       [config]
     );
+
     useEffect(() => {
       const subscription = modalNotifier.subscribe(
         (notification: ModalNotification) => {
           switch (notification.operation) {
             case "open":
-              openMe(notification.child, notification.callback);
+              openMe(
+                notification.child,
+                notification.callback,
+                notification.onClose
+              );
+              console.log("good til effect");
+
               break;
             case "close":
               closeMe(notification.callback);
@@ -116,18 +144,28 @@ export function useModal() {
       </div>
     );
   }
-  // const [{ Modal, openModal, closeModal }] = useState();
-  return {
-    Modal,
-    openModal: (child: ReactElement, callback?: VoidFunction) => {
+  const [{ Modal, openModal, closeModal }] = useState({
+    Modal: _Modal,
+    openModal: (
+      child: ReactElement,
+      callback?: VoidFunction,
+      onClose?: VoidFunction
+    ) => {
       modalNotifier.next({
         operation: "open",
         child,
         callback,
+        onClose,
       });
     },
     closeModal: (callback?: VoidFunction) => {
       modalNotifier.next({ operation: "close", callback });
     },
+  });
+
+  return {
+    Modal,
+    openModal,
+    closeModal,
   };
 }

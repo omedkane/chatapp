@@ -8,7 +8,7 @@ export function AuthenticationScreen() {
   return (
     <div
       id="authentication-screen"
-      className="flex flex-col hw-full sm:px-5 lg:px-8">
+      className="flex flex-col hw-full px-5 lg:px-8">
       <Modal></Modal>
       <div
         className="flex justify-start items-start"

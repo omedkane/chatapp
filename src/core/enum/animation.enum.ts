@@ -1,6 +1,6 @@
 export enum AnimationStatus {
-  Appearing,
-  Appeared,
-  Vanishing,
-  Vanished,
+  Appeared = "appeared",
+  Appearing = "appearing",
+  Vanishing = "vanishing",
+  Vanished = "vanished",
 }
