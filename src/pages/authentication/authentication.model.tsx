@@ -43,7 +43,10 @@ export function useAuthenticationScreenModel() {
   };
 
   const _signUp = async () => {
-    openModal(<LoadingModal message="Creating user..." />);
+    openModal({
+      child: <LoadingModal message="Creating user..." />,
+      closeable: false,
+    });
     setTimeout(async () => {
       await signUp({
         firstName: form.firstName,
@@ -53,33 +56,38 @@ export function useAuthenticationScreenModel() {
       })
         .unwrap()
         .then(() => {
-          closeModal(() => {
-            openModal(
-              <SuccessModal message="Successfully Registered !" />,
-              () => {
-                switchForm();
-                setHasSignedUp(!hasSignedUp);
-              },
-              () => {
-                openModal(
-                  <InfoModal message="Please sign in to your account, to start" />,
-                  undefined,
-                  () => {
-                    form.notify({
-                      fields: ["*"],
-                      operation: "clear",
-                    });
-                  }
-                );
-              }
-            );
+          closeModal({
+            callback: () => {
+              openModal({
+                child: <SuccessModal message="Successfully Registered !" />,
+                callback: () => {
+                  switchForm();
+                  setHasSignedUp(!hasSignedUp);
+                },
+                onClose: () => {
+                  openModal({
+                    child: (
+                      <InfoModal message="Please sign in to your account, to start" />
+                    ),
+                    onClose: () => {
+                      form.notify({
+                        fields: ["*"],
+                        operation: "clear",
+                      });
+                    },
+                  });
+                },
+              });
+            },
           });
         })
         .catch((error) => {
           const errorMessage = error.data.error ?? error.data.message;
 
-          closeModal(() => {
-            openModal(<FailureModal message={errorMessage} />);
+          closeModal({
+            callback: () => {
+              openModal({ child: <FailureModal message={errorMessage} /> });
+            },
           });
         });
     }, 2000);
