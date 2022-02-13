@@ -82,7 +82,7 @@ export function useAuthenticationScreenModel() {
           });
         })
         .catch((error) => {
-          const errorMessage = error.data.error ?? error.data.message;
+          const errorMessage = error.data?.error ?? error.data?.message;
 
           closeModal({
             callback: () => {
@@ -90,7 +90,7 @@ export function useAuthenticationScreenModel() {
             },
           });
         });
-    }, 2000);
+    }, 3000);
   };
 
   return {

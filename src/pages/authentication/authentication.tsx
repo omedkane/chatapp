@@ -24,7 +24,7 @@ export function AuthenticationScreen() {
         className="flex flex-col portrait:mt-8 lg:mt-12 portrait:gap-3"
         style={{ gridArea: "greet" }}>
         <AnimatedSize>
-          {switches.hasSignedUp ? (
+          {switches.hasSignedUp || switches.isLogin ? (
             <h6 key={54} className="font-semibold text-gray-300">
               LOGIN TO START
             </h6>
@@ -39,8 +39,12 @@ export function AuthenticationScreen() {
             <h3 key={57} className="my-2 font-semibold">
               Your account has been created !
             </h3>
-          ) : (
+          ) : switches.isLogin ? (
             <h3 key={56} className="my-2 font-semibold">
+              Please login to your account
+            </h3>
+          ) : (
+            <h3 key={58} className="my-2 font-semibold">
               Create a new account
             </h3>
           )}
@@ -64,6 +68,7 @@ export function AuthenticationScreen() {
             className="md:w-48 mr-4"
             title="First name"
             type="info"
+            validator={(text) => !text.includes("0")}
           />
           <PandaInput
             name="lastName"

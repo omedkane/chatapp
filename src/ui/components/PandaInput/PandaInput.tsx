@@ -22,6 +22,7 @@ interface PandaInputProps<T = any> {
   type: "email" | "info" | "password";
   className?: string;
   remotelyDisabled?: boolean;
+  validator?: (text: string) => boolean;
   onDisabled?: () => void;
   onEnabled?: () => void;
 }
@@ -52,6 +53,7 @@ export function usePandaInput<Form>(
     type,
     className = "",
     remotelyDisabled,
+    validator,
     onDisabled,
     onEnabled,
   }: PandaInputProps<Form>) {
@@ -59,6 +61,7 @@ export function usePandaInput<Form>(
     const InputIcon = InputIcons[type];
 
     const [isFilled, setIsFilled] = useState(false);
+    const [isValid, setIsValid] = useState(true);
 
     const setForm = useCallback(
       (value: string) => setField(name, value),
@@ -106,11 +109,15 @@ export function usePandaInput<Form>(
 
         setForm(value);
 
+        if(validator !== undefined){
+          setIsValid(validator(value));
+        }
+
         if (value !== "") {
           setIsFilled(true);
         } else setIsFilled(false);
       },
-      [setForm]
+      [setForm, validator]
     );
 
     const isAnimating = useCallback(
@@ -257,7 +264,9 @@ export function usePandaInput<Form>(
       <div
         ref={pandaInputRef}
         style={animationProps.style}
-        className={`PandaInput flex rounded-xl h-16 w-full hakkunde ${className} ${animationProps.classes}`}>
+        className={`PandaInput flex rounded-xl h-16 w-full hakkunde ${
+          isValid ? "" : "invalidated"
+        } ${className} ${animationProps.classes}`}>
         <div
           className={`input-box rounded-xl flex flex-col hw-full ${
             isFilled ? "is-filled" : ""
@@ -272,7 +281,7 @@ export function usePandaInput<Form>(
             className="hw-full bg-transparent autofill:bg-black outline-none placeholder:font-bold"
           />
         </div>
-        <div className="h-full flex hakkunde text-gray-300">
+        <div id="input-icon" className="h-full flex hakkunde text-gray-300">
           <InputIcon />
         </div>
       </div>

@@ -1,9 +1,24 @@
 @import "./PandaInputAnimations.scss";
-
+$invalidatedColor: tomato;
 .PandaInput {
   background-color: #323644;
   padding-right: 1rem;
+  &.invalidated {
+    border: 0.15rem solid $invalidatedColor;
+    #input-icon {
+      color: $invalidatedColor !important;
+    }
+    .input-box {
+      #input-name {
+        color: $invalidatedColor !important;
+      }
 
+      input {
+        color: $invalidatedColor;
+        -webkit-text-fill-color: $invalidatedColor;
+      }
+    }
+  }
   .input-box {
     padding: 1.25rem 0 1.25rem 1rem;
     transition: padding 0.35s linear;
