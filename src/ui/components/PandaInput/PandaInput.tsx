@@ -12,8 +12,8 @@ import { AiOutlineEye } from "react-icons/ai";
 import { HiMail } from "react-icons/hi";
 import { FaUserEdit } from "react-icons/fa";
 // @ts-ignore
-import { Subject } from "rxjs";
-import { ControlNotification } from "./PandaForm";
+import { Observable } from "rxjs";
+import { ControlNotification, FormController } from "./PandaForm";
 import { EventHelper } from "@core/helpers/event.helper";
 
 interface PandaInputProps<T = any> {
@@ -43,10 +43,14 @@ const InputIcons: PandaInputIcons = {
   password: () => <AiOutlineEye size={24} />,
 };
 
-export function usePandaInput<Form>(
-  setField: (field: string, value: string | number) => void,
-  subject: Subject<ControlNotification>
-) {
+interface UsePandaInputArgs<Form> {
+  formController: FormController<Form>;
+  observable: Observable<ControlNotification>;
+}
+export function usePandaInput<Form>({
+  observable,
+  formController,
+}: UsePandaInputArgs<Form>) {
   function PandaInput({
     name,
     title,
@@ -64,7 +68,7 @@ export function usePandaInput<Form>(
     const [isValid, setIsValid] = useState(true);
 
     const setForm = useCallback(
-      (value: string) => setField(name, value),
+      (value: string) => formController.setField(name, value),
       [name]
     );
 
@@ -109,7 +113,7 @@ export function usePandaInput<Form>(
 
         setForm(value);
 
-        if(validator !== undefined){
+        if (validator !== undefined) {
           setIsValid(validator(value));
         }
 
@@ -233,7 +237,7 @@ export function usePandaInput<Form>(
     );
 
     useEffect(() => {
-      const subscription = subject.subscribe(
+      const subscription = observable.subscribe(
         (notification: ControlNotification) => {
           if (notification.field !== name && notification.field !== "*") return;
 

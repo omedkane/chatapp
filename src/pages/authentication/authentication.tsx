@@ -60,7 +60,7 @@ export function AuthenticationScreen() {
       </div>
 
       <div
-        className="input-group mt-6 flex flex-col gap-x-0 place-items-center lg:justify-start lg:items-start w-full portrait:mt-12"
+        className="input-group sm:mt-6 flex flex-col gap-x-0 place-items-center lg:justify-start lg:items-start w-full portrait:mt-12"
         style={{ gridArea: "form" }}>
         <div id="basic-info-form" className="flex">
           <PandaInput

@@ -13,18 +13,30 @@ export type ControlNotification = {
 };
 export type NumString = string | number;
 
-export function useForm<Form>(fields: Form) {
+type FormValidators<Form> = {
+  [field in keyof Form]?: (text: string) => boolean;
+};
+
+export type FormController<Form> = {
+  validators: FormValidators<Form>;
+  form: Form;
+  setField: (field: keyof Form, value: NumString) => void;
+  notify: (_: {
+    operation: RemoteOperationType;
+    fields: (keyof Form)[] | ["*"];
+    callback?: () => void;
+  }) => void;
+};
+
+export function useForm<Form extends {}>(
+  fields: Form,
+  validators: FormValidators<Form>
+) {
   const updateSubject = new Subject<Emission>();
   const inputController = new Subject<ControlNotification>();
 
   type Fields = keyof Form;
-  type RemodeledFieldMap = Form & {
-    notify: (_: {
-      operation: RemoteOperationType;
-      fields: Fields[] | ["*"];
-      callback?: () => void;
-    }) => void;
-  };
+  type _FormController = FormController<Form>;
 
   interface ConsumerProps {
     field: Fields;
@@ -53,8 +65,19 @@ export function useForm<Form>(fields: Form) {
     return <Child />;
   }
 
-  const remodeledFieldMap: RemodeledFieldMap = {
-    ...fields,
+  const formController: _FormController = {
+    form: new Proxy<Form>(fields, {
+      set: (fieldMap: Form, field: string, value: NumString) => {
+        (fieldMap as AnyObject)[field] = value;
+        updateSubject.next({ field, value });
+        return true;
+      },
+    }),
+    validators,
+    setField: function (field: Fields, value: NumString) {
+      const obj = this.form as AnyObject;
+      obj[field as string] = value;
+    },
     notify: ({ operation, fields, callback }) => {
       let doneCount = 0;
       const fieldsLength = fields.length;
@@ -74,24 +97,16 @@ export function useForm<Form>(fields: Form) {
       });
     },
   };
-  const proxy = new Proxy<typeof remodeledFieldMap>(remodeledFieldMap, {
-    set: (fieldMap: AnyObject, field: string, value: NumString) => {
-      fieldMap[field] = value;
-      updateSubject.next({ field, value });
-      return true;
-    },
-  });
 
-  const setField = (field: string, value: NumString) => {
-    const obj = proxy as AnyObject;
-    obj[field] = value;
-  };
-
-  const [{ FormConsumer, InputComponent, form }] = useState({
-    InputComponent: usePandaInput<Form>(setField, inputController),
+  const [{ FormConsumer, InputComponent, controller, form }] = useState({
+    InputComponent: usePandaInput<Form>({
+      observable: inputController.asObservable(),
+      formController,
+    }),
     FormConsumer: Consumer,
-    form: proxy,
+    controller: formController,
+    form: formController.form,
   });
 
-  return { PandaInput: InputComponent, FormConsumer, form };
+  return { PandaInput: InputComponent, FormConsumer, controller, form };
 }

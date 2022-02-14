@@ -6,6 +6,7 @@ import { LoadingModal } from "../../ui/components/Modal/common/loading.modal";
 import { SuccessModal } from "../../ui/components/Modal/common/success.modal";
 import { useModal } from "../../ui/components/Modal/Modal";
 import { useForm } from "../../ui/components/PandaInput/PandaForm";
+import validator from "validator";
 
 interface SignUpForm {
   firstName: string;
@@ -21,17 +22,24 @@ export function useAuthenticationScreenModel() {
 
   const { Modal, openModal, closeModal } = useModal();
 
-  const { PandaInput, form } = useForm<SignUpForm>({
-    email: "",
-    firstName: "",
-    lastName: "",
-    password: "",
-  });
+  const { PandaInput, controller, form } = useForm<SignUpForm>(
+    {
+      email: "",
+      firstName: "",
+      lastName: "",
+      password: "",
+    },
+    {
+      email: (text) => {
+        return validator.isEmail(text);
+      },
+    }
+  );
 
   const switchForm = () => {
     if (isLogin) setIsLogin(!isLogin);
 
-    form.notify({
+    controller.notify({
       fields: ["firstName", "lastName"],
       operation: "switch",
       callback: isLogin
@@ -43,54 +51,56 @@ export function useAuthenticationScreenModel() {
   };
 
   const _signUp = async () => {
-    openModal({
-      child: <LoadingModal message="Creating user..." />,
-      closeable: false,
-    });
-    setTimeout(async () => {
-      await signUp({
-        firstName: form.firstName,
-        lastName: form.lastName,
-        email: form.email,
-        password: form.password,
-      })
-        .unwrap()
-        .then(() => {
-          closeModal({
-            callback: () => {
-              openModal({
-                child: <SuccessModal message="Successfully Registered !" />,
-                callback: () => {
-                  switchForm();
-                  setHasSignedUp(!hasSignedUp);
-                },
-                onClose: () => {
-                  openModal({
-                    child: (
-                      <InfoModal message="Please sign in to your account, to start" />
-                    ),
-                    onClose: () => {
-                      form.notify({
-                        fields: ["*"],
-                        operation: "clear",
-                      });
-                    },
-                  });
-                },
-              });
-            },
-          });
-        })
-        .catch((error) => {
-          const errorMessage = error.data?.error ?? error.data?.message;
+    console.log(form);
+    
+    // openModal({
+    //   child: <LoadingModal message="Creating user..." />,
+    //   closeable: false,
+    // });
+    // setTimeout(async () => {
+    //   await signUp({
+    //     firstName: form.firstName,
+    //     lastName: form.lastName,
+    //     email: form.email,
+    //     password: form.password,
+    //   })
+    //     .unwrap()
+    //     .then(() => {
+    //       closeModal({
+    //         callback: () => {
+    //           openModal({
+    //             child: <SuccessModal message="Successfully Registered !" />,
+    //             callback: () => {
+    //               switchForm();
+    //               setHasSignedUp(!hasSignedUp);
+    //             },
+    //             onClose: () => {
+    //               openModal({
+    //                 child: (
+    //                   <InfoModal message="Please sign in to your account, to start" />
+    //                 ),
+    //                 onClose: () => {
+    //                   controller.notify({
+    //                     fields: ["*"],
+    //                     operation: "clear",
+    //                   });
+    //                 },
+    //               });
+    //             },
+    //           });
+    //         },
+    //       });
+    //     })
+    //     .catch((error) => {
+    //       const errorMessage = error.data?.error ?? error.data?.message;
 
-          closeModal({
-            callback: () => {
-              openModal({ child: <FailureModal message={errorMessage} /> });
-            },
-          });
-        });
-    }, 3000);
+    //       closeModal({
+    //         callback: () => {
+    //           openModal({ child: <FailureModal message={errorMessage} /> });
+    //         },
+    //       });
+    //     });
+    // }, 3000);
   };
 
   return {
