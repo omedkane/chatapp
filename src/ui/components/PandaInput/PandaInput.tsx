@@ -12,7 +12,7 @@ import { AiOutlineEye } from "react-icons/ai";
 import { HiMail } from "react-icons/hi";
 import { FaUserEdit } from "react-icons/fa";
 // @ts-ignore
-import { Observable } from "rxjs";
+import { debounceTime, fromEvent, map, Observable } from "rxjs";
 import { ControlNotification, FormController } from "./PandaForm";
 import { EventHelper } from "@core/helpers/event.helper";
 
@@ -101,28 +101,38 @@ export function usePandaInput<Form>({
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [remotelyDisabled]);
 
-    const onChange = useCallback(
-      (
-        element?: React.ChangeEvent<HTMLInputElement>,
-        externalValue?: string
-      ) => {
-        const value =
-          element !== undefined ? element.target.value : externalValue;
-
-        if (value === undefined) return;
-
+    const registerValue = useCallback(
+      (value: string) => {
         setForm(value);
 
-        if (validator !== undefined) {
-          setIsValid(validator(value));
+        const _validator = validator ?? formController.validators[name];
+
+        if (_validator !== undefined) {
+          setIsValid(_validator(value));
         }
 
         if (value !== "") {
           setIsFilled(true);
         } else setIsFilled(false);
       },
-      [setForm, validator]
+      [name, setForm, validator]
     );
+
+    useEffect(() => {
+      if (inputRef.current === null) return;
+      const changeStream = fromEvent(inputRef.current, "keyup");
+
+      const subscription = changeStream
+        .pipe(
+          map((event: Event) => (event.target as HTMLInputElement).value),
+          debounceTime(300)
+        )
+        .subscribe(registerValue);
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    }, [registerValue]);
 
     const isAnimating = useCallback(
       () =>
@@ -154,7 +164,7 @@ export function usePandaInput<Form>({
         EventHelper.setAnimationEndCallback(
           pandaInputRef.current,
           "vanish-panda",
-          (event) => {
+          () => {
             if (_currentWidth) {
               setAnimationProps({
                 ...animationProps,
@@ -228,12 +238,12 @@ export function usePandaInput<Form>({
       (callback?: VoidFunction) => {
         if (inputRef.current !== null) {
           inputRef.current.value = "";
-          onChange(undefined, "");
+          registerValue("");
         }
 
         if (callback !== undefined) callback();
       },
-      [onChange]
+      [registerValue]
     );
 
     useEffect(() => {
@@ -280,7 +290,6 @@ export function usePandaInput<Form>({
           </span>
           <input
             type={type === "password" ? type : "text"}
-            onChange={onChange}
             ref={inputRef}
             className="hw-full bg-transparent autofill:bg-black outline-none placeholder:font-bold"
           />

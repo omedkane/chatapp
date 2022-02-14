@@ -65,7 +65,7 @@ export function useForm<Form extends {}>(
     return <Child />;
   }
 
-  const formController: _FormController = {
+  const _formController: _FormController = {
     form: new Proxy<Form>(fields, {
       set: (fieldMap: Form, field: string, value: NumString) => {
         (fieldMap as AnyObject)[field] = value;
@@ -98,15 +98,15 @@ export function useForm<Form extends {}>(
     },
   };
 
-  const [{ FormConsumer, InputComponent, controller, form }] = useState({
+  const [{ FormConsumer, InputComponent, formController, form }] = useState({
     InputComponent: usePandaInput<Form>({
       observable: inputController.asObservable(),
-      formController,
+      formController: _formController,
     }),
     FormConsumer: Consumer,
-    controller: formController,
-    form: formController.form,
+    formController: _formController,
+    form: _formController.form,
   });
 
-  return { PandaInput: InputComponent, FormConsumer, controller, form };
+  return { PandaInput: InputComponent, FormConsumer, formController, form };
 }

@@ -22,7 +22,7 @@ export function useAuthenticationScreenModel() {
 
   const { Modal, openModal, closeModal } = useModal();
 
-  const { PandaInput, controller, form } = useForm<SignUpForm>(
+  const { PandaInput, formController, form } = useForm<SignUpForm>(
     {
       email: "",
       firstName: "",
@@ -39,7 +39,7 @@ export function useAuthenticationScreenModel() {
   const switchForm = () => {
     if (isLogin) setIsLogin(!isLogin);
 
-    controller.notify({
+    formController.notify({
       fields: ["firstName", "lastName"],
       operation: "switch",
       callback: isLogin
@@ -51,56 +51,54 @@ export function useAuthenticationScreenModel() {
   };
 
   const _signUp = async () => {
-    console.log(form);
-    
-    // openModal({
-    //   child: <LoadingModal message="Creating user..." />,
-    //   closeable: false,
-    // });
-    // setTimeout(async () => {
-    //   await signUp({
-    //     firstName: form.firstName,
-    //     lastName: form.lastName,
-    //     email: form.email,
-    //     password: form.password,
-    //   })
-    //     .unwrap()
-    //     .then(() => {
-    //       closeModal({
-    //         callback: () => {
-    //           openModal({
-    //             child: <SuccessModal message="Successfully Registered !" />,
-    //             callback: () => {
-    //               switchForm();
-    //               setHasSignedUp(!hasSignedUp);
-    //             },
-    //             onClose: () => {
-    //               openModal({
-    //                 child: (
-    //                   <InfoModal message="Please sign in to your account, to start" />
-    //                 ),
-    //                 onClose: () => {
-    //                   controller.notify({
-    //                     fields: ["*"],
-    //                     operation: "clear",
-    //                   });
-    //                 },
-    //               });
-    //             },
-    //           });
-    //         },
-    //       });
-    //     })
-    //     .catch((error) => {
-    //       const errorMessage = error.data?.error ?? error.data?.message;
+    openModal({
+      child: <LoadingModal message="Creating user..." />,
+      closeable: false,
+    });
+    setTimeout(async () => {
+      await signUp({
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        password: form.password,
+      })
+        .unwrap()
+        .then(() => {
+          closeModal({
+            callback: () => {
+              openModal({
+                child: <SuccessModal message="Successfully Registered !" />,
+                callback: () => {
+                  switchForm();
+                  setHasSignedUp(!hasSignedUp);
+                },
+                onClose: () => {
+                  openModal({
+                    child: (
+                      <InfoModal message="Please sign in to your account, to start" />
+                    ),
+                    onClose: () => {
+                      formController.notify({
+                        fields: ["*"],
+                        operation: "clear",
+                      });
+                    },
+                  });
+                },
+              });
+            },
+          });
+        })
+        .catch((error) => {
+          const errorMessage = error.data?.error ?? error.data?.message;
 
-    //       closeModal({
-    //         callback: () => {
-    //           openModal({ child: <FailureModal message={errorMessage} /> });
-    //         },
-    //       });
-    //     });
-    // }, 3000);
+          closeModal({
+            callback: () => {
+              openModal({ child: <FailureModal message={errorMessage} /> });
+            },
+          });
+        });
+    }, 3000);
   };
 
   return {
