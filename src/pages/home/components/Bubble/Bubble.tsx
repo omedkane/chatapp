@@ -1,7 +1,7 @@
-import { message_mocks } from "@business/mocks/messages.mocks";
-import user_mocks from "@business/mocks/users.mocks";
-import { Message } from "@business/models/message";
-import { User } from "@business/models/user";
+import { message_mocks } from "@app/mocks/messages.mocks";
+import user_mocks from "@app/mocks/users.mocks";
+import { Message } from "@app/models/message";
+import { User } from "@app/models/user";
 import { Avatar } from "../avatar/avatar";
 
 interface BubbleProps {

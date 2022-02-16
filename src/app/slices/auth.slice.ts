@@ -1,8 +1,8 @@
 import { RootState } from "@app/store";
-import { Chat } from "@business/models/chat";
-import { User } from "@business/models/user";
+import { Chat } from "@app/models/chat";
+import { User } from "@app/models/user";
 import { createSlice } from "@reduxjs/toolkit";
-import auth from "../thunks/auth.thunks";
+import AuthAPI from "../../services/auth.service";
 
 let storedUser = localStorage.getItem("chatapp/user");
 const user = storedUser ? JSON.parse(storedUser) : null;
@@ -26,23 +26,22 @@ const authSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(auth.login.fulfilled, (state, action) => {
-      const { user, chats, onlineFriends } = action.payload;
-      console.log("It works till here");
+    builder.addMatcher(
+      AuthAPI.endpoints.signIn.matchFulfilled,
+      (state, action) => {
+        const user = action.payload;
 
-      localStorage.setItem("chatapp/user", JSON.stringify(user));
+        localStorage.setItem("chatapp/user", JSON.stringify(user));
 
-      state.chats = chats;
-      state.onlineFriends = onlineFriends;
-      state.user = user;
-
-      state.isLoggedIn = true;
-    });
+        state.user = user;
+      }
+    );
   },
 });
 
 const selectCurrentUser = (state: RootState): User => state.auth.user!;
-const selectOnlineFriends = (state: RootState): User[] => state.auth.onlineFriends!;
+const selectOnlineFriends = (state: RootState): User[] =>
+  state.auth.onlineFriends!;
 const selectChats = (state: RootState): Chat[] => state.auth.chats;
 
 export { selectChats, selectCurrentUser, selectOnlineFriends };

@@ -1,4 +1,4 @@
-import { User, UserEntity } from "@business/models/user";
+import { User, UserEntity } from "@app/models/user";
 import avatar0 from "../../assets/avatar0.jpg";
 import avatar1 from "../../assets/avatar1.jpg";
 import avatar2 from "../../assets/avatar2.jpg";

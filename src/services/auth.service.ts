@@ -1,24 +1,6 @@
-import user_mocks from "@business/mocks/users.mocks";
-import { User, UserEntity } from "@business/models/user";
-import { ApiResponse } from "./service.types";
+import { User, UserEntity } from "@app/models/user";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-interface IAuthService {
-  readonly login: () => Promise<ApiResponse<User>>;
-}
-
-export const AuthService: IAuthService = {
-  login: async () => {
-    return new Promise<ApiResponse<User>>((resolve) =>
-      setTimeout(() => {
-        const user = user_mocks[0];
-        console.log(user_mocks);
-
-        resolve(new ApiResponse(user));
-      }, 500)
-    );
-  },
-};
 interface UserRequestBody {
   firstName: string;
   lastName: string;
@@ -37,26 +19,28 @@ const AuthAPI = createApi({
         body: user,
       }),
     }),
-    signIn: builder.mutation<User, { email: string; password: string }>({
-      query: (credentials) => ({
-        url: "/auth",
+    signIn: builder.query<User, { email: string; password: string }>({
+      query: (userCredentials) => ({
+        url: "/auth/signin",
         method: "POST",
-        body: credentials,
+        body: userCredentials,
       }),
       transformResponse: (response) => {
         console.log(response);
 
         const res = response as {
-          id: string;
-          avatar: string;
-          firstName: string;
-          lastName: string;
+          user: {
+            id: string;
+            avatar: string;
+            firstName: string;
+            lastName: string;
+          };
         };
         return UserEntity.toModel({
-          id: res.id,
-          avatarUri: res.avatar,
-          firstName: res.firstName,
-          lastName: res.lastName,
+          id: res.user.id,
+          avatarUri: res.user.avatar,
+          firstName: res.user.firstName,
+          lastName: res.user.lastName,
         });
       },
     }),

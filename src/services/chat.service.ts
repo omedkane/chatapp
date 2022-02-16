@@ -1,6 +1,6 @@
-import chat_mocks from "@business/mocks/chats.mocks";
-import { Chat } from "@business/models/chat";
-import { User } from "@business/models/user";
+import chat_mocks from "@app/mocks/chats.mocks";
+import { Chat } from "@app/models/chat";
+import { User } from "@app/models/user";
 import { ApiResponse } from "./service.types";
 
 interface IChatService {

@@ -1,4 +1,4 @@
-import { Chat, ChatEntity } from "@business/models/chat";
+import { Chat, ChatEntity } from "@app/models/chat";
 import { message_mocks } from "./messages.mocks";
 import user_mocks from "./users.mocks";
 

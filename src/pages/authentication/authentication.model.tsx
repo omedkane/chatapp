@@ -7,6 +7,7 @@ import { SuccessModal } from "../../ui/components/Modal/common/success.modal";
 import { useModal } from "../../ui/components/Modal/Modal";
 import { useForm } from "../../ui/components/PandaInput/PandaForm";
 import validator from "validator";
+import { useNavigate } from "react-router-dom";
 
 interface SignUpForm {
   firstName: string;
@@ -15,26 +16,29 @@ interface SignUpForm {
   password: string;
 }
 export function useAuthenticationScreenModel() {
-  const [signUp] = AuthAPI.useSignUpMutation({});
+  const navigate = useNavigate();
+
+  const [signUp] = AuthAPI.useSignUpMutation();
+  const [signIn] = AuthAPI.useLazySignInQuery();
 
   const [isLogin, setIsLogin] = useState(false);
   const [hasSignedUp, setHasSignedUp] = useState(false);
 
   const { Modal, openModal, closeModal } = useModal();
 
-  const { PandaInput, formController, form } = useForm<SignUpForm>(
-    {
+  const { PandaInput, formController, form } = useForm<SignUpForm>({
+    fields: {
       email: "",
       firstName: "",
       lastName: "",
       password: "",
     },
-    {
+    validators: {
       email: (text) => {
         return validator.isEmail(text);
       },
-    }
-  );
+    },
+  });
 
   const switchForm = () => {
     if (isLogin) setIsLogin(!isLogin);
@@ -55,8 +59,8 @@ export function useAuthenticationScreenModel() {
       child: <LoadingModal message="Creating user..." />,
       closeable: false,
     });
-    setTimeout(async () => {
-      await signUp({
+    setTimeout(() => {
+      signUp({
         firstName: form.firstName,
         lastName: form.lastName,
         email: form.email,
@@ -101,8 +105,45 @@ export function useAuthenticationScreenModel() {
     }, 3000);
   };
 
+  const _signIn = async () => {
+    openModal({
+      child: <LoadingModal message="Creating user..." />,
+      closeable: false,
+    });
+    setTimeout(() => {
+      signIn({
+        email: form.email,
+        password: form.password,
+      })
+        .unwrap()
+        .then((data) => {
+          console.log(data);
+
+          closeModal({
+            callback: () => {
+              openModal({
+                child: (
+                  <SuccessModal message="Logged In !, You'll be redirected shortly..." />
+                ),
+              });
+            },
+          });
+        })
+        .catch((error) => {
+          const errorMessage = error.data?.error ?? error.data?.message;
+
+          closeModal({
+            callback: () => {
+              openModal({ child: <FailureModal message={errorMessage} /> });
+            },
+          });
+        });
+    }, 3000);
+  };
+
   return {
     signUp: _signUp,
+    signIn: _signIn,
     switches: { isLogin, hasSignedUp },
     Modal,
     switchForm,

@@ -1,4 +1,4 @@
-import { Chat } from "@business/models/chat";
+import { Chat } from "@app/models/chat";
 import { Avatar } from "../avatar/avatar";
 import "./chatbox.scss";
 

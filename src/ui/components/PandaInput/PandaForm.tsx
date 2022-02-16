@@ -28,10 +28,12 @@ export type FormController<Form> = {
   }) => void;
 };
 
-export function useForm<Form extends {}>(
-  fields: Form,
-  validators: FormValidators<Form>
-) {
+interface UseFormArgs<Form> {
+  fields: Form;
+  validators: FormValidators<Form>;
+}
+
+export function useForm<Form extends {}>({ fields, validators }: UseFormArgs<Form>) {
   const updateSubject = new Subject<Emission>();
   const inputController = new Subject<ControlNotification>();
 

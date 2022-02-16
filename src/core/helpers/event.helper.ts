@@ -1,11 +1,18 @@
 export abstract class EventHelper {
   static setAnimationEndCallback(
     element: HTMLElement,
-    animationName: string,
-    callback: (event: AnimationEvent) => void
+    animationName: string | string[],
+    callback: (event?: AnimationEvent) => void
   ) {
+    const animationsCount =
+      typeof animationName === "string" ? 1 : animationName.length;
+    let counter = 0;
+
     const onAnimationEnd = (event: AnimationEvent) => {
-      if (event.animationName === animationName) {
+      if (
+        event.animationName === animationName &&
+        ++counter === animationsCount
+      ) {
         element.removeEventListener("animationend", onAnimationEnd);
         callback(event);
       }

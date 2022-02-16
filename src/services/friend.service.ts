@@ -1,5 +1,5 @@
-import user_mocks from "@business/mocks/users.mocks";
-import { User } from "@business/models/user";
+import user_mocks from "@app/mocks/users.mocks";
+import { User } from "@app/models/user";
 import { ApiResponse } from "./service.types";
 
 interface IFriendService {

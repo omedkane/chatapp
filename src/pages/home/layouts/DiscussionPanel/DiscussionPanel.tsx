@@ -1,7 +1,7 @@
 // import { Image, Note, PhoneCall, VideoCamera } from "phosphor-react";
-import { Group } from "@business/models/group";
-import { Message } from "@business/models/message";
-import { User } from "@business/models/user";
+import { Group } from "@app/models/group";
+import { Message } from "@app/models/message";
+import { User } from "@app/models/user";
 import { Bubble } from "@pages/home/components/Bubble/Bubble";
 import { BsCameraVideo, BsCardImage, BsJournalText } from "react-icons/bs";
 import { FiPhoneCall } from "react-icons/fi";

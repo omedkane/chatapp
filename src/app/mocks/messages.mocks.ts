@@ -1,5 +1,5 @@
-import { MessageType } from "@business/enums/messages.enum";
-import { Message, MessageEntity } from "@business/models/message";
+import { MessageType } from "@app/enums/messages.enum";
+import { Message, MessageEntity } from "@app/models/message";
 import user_mocks from "./users.mocks";
 
 const toModel = MessageEntity.toModel;

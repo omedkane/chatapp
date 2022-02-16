@@ -1,4 +1,4 @@
-import { MessageType } from "@business/enums/messages.enum";
+import { MessageType } from "@app/enums/messages.enum";
 import { Group } from "./group";
 import { User } from "./user";
 

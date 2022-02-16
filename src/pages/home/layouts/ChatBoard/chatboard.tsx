@@ -1,5 +1,5 @@
-import { Chat } from "@business/models/chat";
-import { User } from "@business/models/user";
+import { Chat } from "@app/models/chat";
+import { User } from "@app/models/user";
 import { Avatar } from "@pages/home/components/avatar/avatar";
 import { ChatBox } from "@pages/home/components/chatbox/chatbox";
 import { FaRegStar } from "react-icons/fa";

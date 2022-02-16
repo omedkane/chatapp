@@ -3,7 +3,7 @@ import { useAuthenticationScreenModel } from "./authentication.model";
 import "./authentication.scss";
 
 export function AuthenticationScreen() {
-  const { switches, switchForm, Modal, PandaInput, signUp } =
+  const { switches, switchForm, Modal, PandaInput, signUp, signIn } =
     useAuthenticationScreenModel();
   return (
     <div
@@ -52,7 +52,7 @@ export function AuthenticationScreen() {
         <span className="text-gray-300">
           {switches.isLogin ? "Don't have an account" : "Already a member ?"}
           <span
-            className="font-bold text-blue-800 pl-2 cursor-pointer"
+            className="font-bold text-blue-800 pl-2 cursor-pointer select-none"
             onClick={() => switchForm()}>
             {switches.isLogin ? "Sign Up" : "Login"}
           </span>
@@ -87,11 +87,11 @@ export function AuthenticationScreen() {
         </div>
         <button
           onClick={() => {
-            signUp();
+            switches.isLogin ? signIn() : signUp();
           }}
           id="submit-button"
           className="mt-6 lg:mt-12 flex hakkunde rounded-full active:outline-none px-10 py-4">
-          Sign Up
+          {switches.isLogin ? "Sign in" : "Sign Up"}
         </button>
       </div>
     </div>

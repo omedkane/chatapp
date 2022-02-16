@@ -156,6 +156,7 @@ export function usePandaInput<Form>({
 
         setAnimationProps({
           ...animationProps,
+          status: PandaStatus.Vanishing,
           classes: "vanishing",
         });
 
@@ -206,7 +207,7 @@ export function usePandaInput<Form>({
           EventHelper.setAnimationEndCallback(
             pandaInputRef.current,
             "show-input-box",
-            (event) => {
+            () => {
               setAnimationProps({
                 ...animationProps,
                 status: PandaStatus.Appeared,
