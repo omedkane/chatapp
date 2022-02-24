@@ -4,36 +4,49 @@ import { usePandaInput } from "./PandaInput";
 import { Subject } from "rxjs";
 import { AnyObject } from "immer/dist/internal";
 
-export type Emission = { field: string; value: NumString };
+export type Emission = { field: string; value: string };
 type RemoteOperationType = "disable" | "enable" | "switch" | "clear";
 export type ControlNotification = {
   field: string;
   operation: RemoteOperationType;
   callback?: () => void;
 };
-export type NumString = string | number;
 
 type FormValidators<Form> = {
-  [field in keyof Form]?: (text: string) => boolean;
+  [field in keyof Form]?: {
+    // ! refactor this to numstring
+    validator: (text: string) => boolean;
+    message: string;
+  };
 };
 
 export type FormController<Form> = {
   validators: FormValidators<Form>;
   form: Form;
-  setField: (field: keyof Form, value: NumString) => void;
+  setField: (field: keyof Form, value: string) => void;
   notify: (_: {
     operation: RemoteOperationType;
     fields: (keyof Form)[] | ["*"];
     callback?: () => void;
+  }) => void;
+  validate: (args: {
+    targetFields?: (keyof Form)[];
+    onValidationError: (message: string) => void;
+    onSuccess: VoidFunction;
   }) => void;
 };
 
 interface UseFormArgs<Form> {
   fields: Form;
   validators: FormValidators<Form>;
+  onSubmit: VoidFunction;
 }
 
-export function useForm<Form extends {}>({ fields, validators }: UseFormArgs<Form>) {
+export function useForm<Form extends { [key: string]: string }>({
+  fields,
+  validators,
+  onSubmit,
+}: UseFormArgs<Form>) {
   const updateSubject = new Subject<Emission>();
   const inputController = new Subject<ControlNotification>();
 
@@ -46,7 +59,7 @@ export function useForm<Form extends {}>({ fields, validators }: UseFormArgs<For
   }
 
   function Consumer(props: ConsumerProps) {
-    const [value, setValue] = useState<NumString>("");
+    const [value, setValue] = useState<string>("");
 
     useEffect(() => {
       const subscription = updateSubject.subscribe({
@@ -69,14 +82,14 @@ export function useForm<Form extends {}>({ fields, validators }: UseFormArgs<For
 
   const _formController: _FormController = {
     form: new Proxy<Form>(fields, {
-      set: (fieldMap: Form, field: string, value: NumString) => {
+      set: (fieldMap: Form, field: string, value: string) => {
         (fieldMap as AnyObject)[field] = value;
         updateSubject.next({ field, value });
         return true;
       },
     }),
     validators,
-    setField: function (field: Fields, value: NumString) {
+    setField: function (field: Fields, value: string) {
       const obj = this.form as AnyObject;
       obj[field as string] = value;
     },
@@ -98,12 +111,24 @@ export function useForm<Form extends {}>({ fields, validators }: UseFormArgs<For
         });
       });
     },
+    validate: function (this, { targetFields, onValidationError, onSuccess }) {
+      const _targetFields = targetFields ?? Object.keys(fields);
+
+      for (const field of _targetFields) {
+        const value = this.form[field];
+        const validation = validators[field];
+        if (validation !== undefined && !validation.validator(value))
+          return onValidationError(validation.message);
+      }
+      onSuccess();
+    },
   };
 
   const [{ FormConsumer, InputComponent, formController, form }] = useState({
     InputComponent: usePandaInput<Form>({
       observable: inputController.asObservable(),
       formController: _formController,
+      onPressEnter: onSubmit,
     }),
     FormConsumer: Consumer,
     formController: _formController,

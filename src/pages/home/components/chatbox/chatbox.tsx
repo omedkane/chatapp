@@ -12,7 +12,7 @@ export function ChatBox({ chat }: ChatBoxProps) {
 
   return (
     <div className="chat-box flex cursor-pointer py-4 px-4 items-center">
-      <Avatar uri={mate.avatarUri}></Avatar>
+      <Avatar uri={mate.avatarURI}></Avatar>
       <div className="pl-4 flex flex-col overflow-hidden hw-full">
         <span className="font-semibold">{fullName}</span>
         <span className="text-gray-600 text-ellipsis overflow-hidden whitespace-nowrap">

@@ -1,15 +1,15 @@
-export function authenticate(jwt: object, callback: VoidFunction) {
+function authenticate(jwt: string, callback?: VoidFunction) {
   localStorage.setItem("jwt", JSON.stringify(jwt));
-  callback();
+  if (callback !== undefined) callback();
 }
 
-export function isAuthenticated() {
+function isAuthenticated(): string | boolean {
   const storedJWT = localStorage.getItem("jwt");
 
-  return storedJWT ?? false;
+  return storedJWT !== null ? JSON.parse(storedJWT) : false;
 }
 
-export function clearToken(
+function clearToken(
   beforeSignOut: VoidFunction,
   signOutFunction: () => Promise<void>
 ) {
@@ -21,3 +21,6 @@ export function clearToken(
     document.cookie = "t=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
   });
 }
+
+const authHelper = { authenticate, isAuthenticated, clearToken };
+export default authHelper;

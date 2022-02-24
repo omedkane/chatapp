@@ -7,7 +7,7 @@ import {
 import { useEffect, useState } from "react";
 
 const useHomeModel = () => {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const dispatch = useAppDispatch();
 

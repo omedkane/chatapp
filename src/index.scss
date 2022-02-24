@@ -124,3 +124,27 @@ small,
 .bg-orangered {
   background-color: orangered;
 }
+.panda-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  outline: none;
+  padding: 1rem 2.5rem;
+  border-radius: 9999px;
+  transition: background-color 0.35s, box-shadow 0.35s;
+  transition-timing-function: linear;
+  &.with-icon {
+    padding: 0.9rem 1.1rem;
+  }
+  &.blue {
+    background-color: #1d90f5;
+    box-shadow: 0px 0px 16px -1px #1d90f561;
+    &:hover:not(.disabled) {
+      background-color: #0068c3;
+    }
+  }
+  &.disabled {
+    background-color: black;
+    box-shadow: none;
+  }
+}

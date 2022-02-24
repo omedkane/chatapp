@@ -3,9 +3,26 @@ import { Chat } from "@app/models/chat";
 import { User } from "@app/models/user";
 import { createSlice } from "@reduxjs/toolkit";
 import AuthAPI from "../../services/auth.service";
+import { server } from "@app/configs/server.config";
 
-let storedUser = localStorage.getItem("chatapp/user");
-const user = storedUser ? JSON.parse(storedUser) : null;
+const localStorageKey = "chatapp/user";
+
+const getCachedUser = () => {
+  const _cachedUser = localStorage.getItem(localStorageKey);
+
+  if (_cachedUser === null && window.location.pathname !== "/auth") {
+    window.location.replace("auth");
+  }
+
+  return _cachedUser ? JSON.parse(_cachedUser) : null;
+};
+
+const updateCachedUser = (user: User) => {
+  localStorage.removeItem("chatapp/user");
+  localStorage.setItem("chatapp/user", JSON.stringify(user));
+};
+
+const cachedUser = getCachedUser();
 
 interface AuthState {
   isLoggedIn: boolean;
@@ -14,9 +31,11 @@ interface AuthState {
   chats: Chat[];
 }
 
+console.log(cachedUser);
+
 const initialState: AuthState = {
-  isLoggedIn: user ? true : false,
-  user,
+  isLoggedIn: cachedUser ? true : false,
+  user: cachedUser,
   onlineFriends: [],
   chats: [],
 };
@@ -30,10 +49,19 @@ const authSlice = createSlice({
       AuthAPI.endpoints.signIn.matchFulfilled,
       (state, action) => {
         const user = action.payload;
+        user.avatarURI = server.links.getAvatarURI(user.id);
 
-        localStorage.setItem("chatapp/user", JSON.stringify(user));
+        updateCachedUser(user);
 
         state.user = user;
+      }
+    );
+
+    builder.addMatcher(
+      AuthAPI.endpoints.setUserAvatar.matchFulfilled,
+      (state) => {
+        state.user.avatarURI = server.links.getAvatarURI(state.user.id);
+        updateCachedUser(state.user);
       }
     );
   },

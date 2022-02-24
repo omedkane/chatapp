@@ -1,6 +1,5 @@
 import "./PandaInput.scss";
 import {
-  ComponentType,
   CSSProperties,
   Fragment,
   useCallback,
@@ -8,11 +7,11 @@ import {
   useRef,
   useState,
 } from "react";
-import { AiOutlineEye } from "react-icons/ai";
+import { AiFillEyeInvisible, AiOutlineEye } from "react-icons/ai";
 import { HiMail } from "react-icons/hi";
 import { FaUserEdit } from "react-icons/fa";
 // @ts-ignore
-import { debounceTime, fromEvent, map, Observable } from "rxjs";
+import { debounceTime, fromEvent, map, Observable, Subscription } from "rxjs";
 import { ControlNotification, FormController } from "./PandaForm";
 import { EventHelper } from "@core/helpers/event.helper";
 
@@ -21,8 +20,6 @@ interface PandaInputProps<T = any> {
   title: string;
   type: "email" | "info" | "password";
   className?: string;
-  remotelyDisabled?: boolean;
-  validator?: (text: string) => boolean;
   onDisabled?: () => void;
   onEnabled?: () => void;
 }
@@ -34,30 +31,46 @@ const enum PandaStatus {
 }
 
 type PandaInputIcons = {
-  [key in PandaInputProps["type"]]: ComponentType;
+  [key in PandaInputProps["type"]]: (...args: any) => JSX.Element;
 };
 
 const InputIcons: PandaInputIcons = {
   email: () => <HiMail size={24} />,
   info: () => <FaUserEdit size={24} />,
-  password: () => <AiOutlineEye size={24} />,
+  password: ({
+    passwordVisible,
+    onClick,
+  }: {
+    passwordVisible: boolean;
+    onClick: VoidFunction;
+  }) => {
+    return passwordVisible ? (
+      <AiOutlineEye size={24} className="cursor-pointer" onClick={onClick} />
+    ) : (
+      <AiFillEyeInvisible
+        size={24}
+        className="cursor-pointer"
+        onClick={onClick}
+      />
+    );
+  },
 };
 
 interface UsePandaInputArgs<Form> {
   formController: FormController<Form>;
   observable: Observable<ControlNotification>;
+  onPressEnter: VoidFunction;
 }
 export function usePandaInput<Form>({
   observable,
   formController,
+  onPressEnter,
 }: UsePandaInputArgs<Form>) {
   function PandaInput({
     name,
     title,
     type,
     className = "",
-    remotelyDisabled,
-    validator,
     onDisabled,
     onEnabled,
   }: PandaInputProps<Form>) {
@@ -66,6 +79,8 @@ export function usePandaInput<Form>({
 
     const [isFilled, setIsFilled] = useState(false);
     const [isValid, setIsValid] = useState(true);
+    const [passwordVisible, setPasswordVisible] = useState(false);
+    const [subscription, setSubscription] = useState<Subscription>();
 
     const setForm = useCallback(
       (value: string) => formController.setField(name, value),
@@ -89,50 +104,63 @@ export function usePandaInput<Form>({
       if (inputRef.current !== null) setForm(inputRef.current.value);
     });
 
-    useEffect(() => {
-      if (remotelyDisabled && animationProps.status === PandaStatus.Appeared) {
-        disableMe();
-      } else if (
-        !remotelyDisabled &&
-        animationProps.status === PandaStatus.Vanished
-      ) {
-        enableMe();
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [remotelyDisabled]);
-
     const registerValue = useCallback(
       (value: string) => {
+        console.log({
+          name,
+          log: "This isn't doin' shit",
+        });
+
         setForm(value);
 
-        const _validator = validator ?? formController.validators[name];
-
-        if (_validator !== undefined) {
-          setIsValid(_validator(value));
-        }
+        const _validator =  formController.validators[name]?.validator;
 
         if (value !== "") {
           setIsFilled(true);
-        } else setIsFilled(false);
+          if (_validator !== undefined) {
+            setIsValid(_validator(value));
+          }
+        } else {
+          setIsFilled(false);
+          setIsValid(true);
+        }
       },
-      [name, setForm, validator]
+      [name, setForm]
     );
 
+    const clearMe = useCallback(
+      (callback?: VoidFunction) => {
+        if (inputRef.current !== null) {
+          inputRef.current.value = "";
+          registerValue("");
+        }
+
+        if (callback !== undefined) callback();
+      },
+      [registerValue]
+    );
+
+    const setUp = useCallback(() => {
+      globalThis.requestAnimationFrame(() => {
+        if (inputRef.current === null) return;
+        console.log({ name, msg: "Sweet, I just subscribed" });
+
+        const changeStream = fromEvent(inputRef.current, "keyup");
+
+        const subscription = changeStream
+          .pipe(
+            map((event: Event) => (event.target as HTMLInputElement).value),
+            debounceTime(300)
+          )
+          .subscribe(registerValue);
+
+        setSubscription(subscription);
+      });
+    }, [name, registerValue]);
+
     useEffect(() => {
-      if (inputRef.current === null) return;
-      const changeStream = fromEvent(inputRef.current, "keyup");
-
-      const subscription = changeStream
-        .pipe(
-          map((event: Event) => (event.target as HTMLInputElement).value),
-          debounceTime(300)
-        )
-        .subscribe(registerValue);
-
-      return () => {
-        subscription.unsubscribe();
-      };
-    }, [registerValue]);
+      setUp();
+    }, [setUp]);
 
     const isAnimating = useCallback(
       () =>
@@ -154,11 +182,20 @@ export function usePandaInput<Form>({
         const { width: _currentWidth, margin: _currentMargin } =
           globalThis.getComputedStyle(pandaInputRef.current);
 
+        if (subscription !== undefined) {
+          subscription.unsubscribe();
+          console.log({ name, msg: "Yep I unsubscribed" });
+        }
+
+        clearMe();
+
         setAnimationProps({
           ...animationProps,
           status: PandaStatus.Vanishing,
           classes: "vanishing",
         });
+
+        setSubscription(undefined);
 
         if (pandaInputRef.current === null) return;
 
@@ -183,7 +220,7 @@ export function usePandaInput<Form>({
           }
         );
       },
-      [animationProps, isAnimating, onDisabled]
+      [animationProps, clearMe, isAnimating, name, onDisabled, subscription]
     );
 
     const enableMe = useCallback(
@@ -204,6 +241,8 @@ export function usePandaInput<Form>({
         requestAnimationFrame(() => {
           if (pandaInputRef.current === null) return;
 
+          setUp();
+
           EventHelper.setAnimationEndCallback(
             pandaInputRef.current,
             "show-input-box",
@@ -222,7 +261,7 @@ export function usePandaInput<Form>({
           );
         });
       },
-      [animationProps, isAnimating, onEnabled]
+      [animationProps, isAnimating, onEnabled, setUp]
     );
 
     const switchMe = useCallback(
@@ -234,17 +273,6 @@ export function usePandaInput<Form>({
           enableMe(callback);
       },
       [animationProps.status, disableMe, enableMe, isAnimating]
-    );
-    const clearMe = useCallback(
-      (callback?: VoidFunction) => {
-        if (inputRef.current !== null) {
-          inputRef.current.value = "";
-          registerValue("");
-        }
-
-        if (callback !== undefined) callback();
-      },
-      [registerValue]
     );
 
     useEffect(() => {
@@ -273,6 +301,10 @@ export function usePandaInput<Form>({
       };
     }, [clearMe, disableMe, enableMe, name, switchMe]);
 
+    const togglePasswordVisibility = () => {
+      setPasswordVisible(!passwordVisible);
+    };
+
     return animationProps.status === PandaStatus.Vanished ? (
       <Fragment />
     ) : (
@@ -290,13 +322,25 @@ export function usePandaInput<Form>({
             {title}
           </span>
           <input
-            type={type === "password" ? type : "text"}
+            type={type === "password" && !passwordVisible ? type : "text"}
             ref={inputRef}
+            onKeyUp={(event) => {
+              if (event.key === "Enter") {
+                onPressEnter();
+              }
+            }}
             className="hw-full bg-transparent autofill:bg-black outline-none placeholder:font-bold"
           />
         </div>
         <div id="input-icon" className="h-full flex hakkunde text-gray-300">
-          <InputIcon />
+          {type === "password" ? (
+            <InputIcon
+              passwordVisible={passwordVisible}
+              onClick={() => togglePasswordVisibility()}
+            />
+          ) : (
+            <InputIcon />
+          )}
         </div>
       </div>
     );

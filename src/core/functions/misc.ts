@@ -16,3 +16,6 @@ export async function runAsyncArr(
   });
   if (callback !== undefined) callback();
 }
+
+export const doesExist = (variable: any) =>
+  variable !== undefined && variable !== null;

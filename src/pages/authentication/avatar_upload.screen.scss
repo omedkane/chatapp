@@ -1,0 +1,46 @@
+#avatar-upload-screen {
+  background-color: #282a37;
+  color: white;
+  font-family: Gilroy;
+  #avatar-uploader {
+    height: 300px;
+    width: 350px;
+    border: 0.3rem dashed #d3d3d338;
+    transition: border-style 0.5s, border-width 0.5s;
+    transition-timing-function: linear;
+    &.has-image {
+      border-style: solid;
+      border-width: 0;
+      #image-picker {
+        display: flex;
+        position: absolute;
+        background-color: rgba(0, 0, 0, 0.6);
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        width: 100%;
+        top: 0;
+        left: 0;
+        opacity: 0;
+        transition: opacity 0.25s linear;
+      }
+      &:hover {
+        #image-picker {
+          opacity: 1;
+        }
+      }
+    }
+
+    border-radius: 2.25rem;
+    cursor: pointer;
+    overflow: hidden;
+    transition: background-color 0.3s linear;
+    &:hover {
+      background-color: #ffffff0d;
+    }
+    #selected-avatar {
+      border-radius: inherit;
+      object-fit: cover;
+    }
+  }
+}

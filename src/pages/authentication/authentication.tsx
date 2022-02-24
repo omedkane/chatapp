@@ -3,7 +3,7 @@ import { useAuthenticationScreenModel } from "./authentication.model";
 import "./authentication.scss";
 
 export function AuthenticationScreen() {
-  const { switches, switchForm, Modal, PandaInput, signUp, signIn } =
+  const { switches, switchForm, Modal, PandaInput, submit } =
     useAuthenticationScreenModel();
   return (
     <div
@@ -60,7 +60,7 @@ export function AuthenticationScreen() {
       </div>
 
       <div
-        className="input-group sm:mt-6 flex flex-col gap-x-0 place-items-center lg:justify-start lg:items-start w-full portrait:mt-12"
+        className="input-group mt-6 flex flex-col gap-x-0 place-items-center lg:justify-start lg:items-start w-full portrait:mt-12"
         style={{ gridArea: "form" }}>
         <div id="basic-info-form" className="flex">
           <PandaInput
@@ -68,7 +68,6 @@ export function AuthenticationScreen() {
             className="md:w-48 mr-4"
             title="First name"
             type="info"
-            validator={(text) => !text.includes("0")}
           />
           <PandaInput
             name="lastName"
@@ -86,11 +85,9 @@ export function AuthenticationScreen() {
           <PandaInput name="password" title="Password" type="password" />
         </div>
         <button
-          onClick={() => {
-            switches.isLogin ? signIn() : signUp();
-          }}
+          onClick={submit}
           id="submit-button"
-          className="mt-6 lg:mt-12 flex hakkunde rounded-full active:outline-none px-10 py-4">
+          className="mt-6 lg:mt-12 panda-button blue">
           {switches.isLogin ? "Sign in" : "Sign Up"}
         </button>
       </div>

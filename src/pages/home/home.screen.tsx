@@ -5,7 +5,6 @@ import Spinner from "react-spinkit";
 import { ChatBoard } from "./layouts/ChatBoard/chatboard";
 import { DiscussionPanel } from "./layouts/DiscussionPanel/DiscussionPanel";
 import { ChatInfo } from "./layouts/ChatInfo/chatinfo";
-import { message_mocks } from "@app/mocks/messages.mocks";
 
 export function Home() {
   const { isLoading, currentUser, onlineFriends, chats } = useHomeModel();
@@ -22,8 +21,8 @@ export function Home() {
         onlineFriends={onlineFriends}
         chats={chats}
       />
-      <DiscussionPanel mate={onlineFriends[0]} messages={message_mocks}/>
-      <ChatInfo/>
+      <DiscussionPanel mate={onlineFriends[0]} messages={[]} />
+      <ChatInfo />
     </div>
   );
 }

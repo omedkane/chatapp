@@ -14,7 +14,7 @@ export function Bubble() {
   const message = message_mocks[0];
   return (
     <div className="flex justify-start items-start">
-      <Avatar uri={user.avatarUri} />
+      <Avatar uri={user.avatarURI} />
       <div className="ml-4 flex flex-col">
         <div className="flex">
           <h6 className="font-semibold">{user.fullName}</h6>

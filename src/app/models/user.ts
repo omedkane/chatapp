@@ -1,8 +1,10 @@
+import { server } from "@app/configs/server.config";
+
 interface UserWithoutGetters {
   id: string;
   firstName: string;
   lastName: string;
-  avatarUri: string;
+  avatarURI: string;
 }
 export interface User extends UserWithoutGetters {
   fullName: string;
@@ -14,6 +16,6 @@ export abstract class UserEntity {
     firstName: user.firstName,
     fullName: user.firstName + " " + user.lastName,
     lastName: user.lastName,
-    avatarUri: user.avatarUri,
+    avatarURI: server.links.getAvatarURI(user.avatarURI),
   });
 }

@@ -8,13 +8,14 @@ import { useModal } from "../../ui/components/Modal/Modal";
 import { useForm } from "../../ui/components/PandaInput/PandaForm";
 import validator from "validator";
 import { useNavigate } from "react-router-dom";
+import { doesExist } from "@core/functions/misc";
 
-interface SignUpForm {
+type SignUpForm = {
   firstName: string;
   lastName: string;
   email: string;
   password: string;
-}
+};
 export function useAuthenticationScreenModel() {
   const navigate = useNavigate();
 
@@ -34,9 +35,34 @@ export function useAuthenticationScreenModel() {
       password: "",
     },
     validators: {
-      email: (text) => {
-        return validator.isEmail(text);
+      email: {
+        message: "Please type in a correct email address !",
+        validator: (text) => {
+          return validator.isEmail(text);
+        },
       },
+      password: {
+        message: "Your password must be more than 6 characters !",
+        validator: (pass) => {
+          return pass.length > 6;
+        },
+      },
+      firstName: {
+        message: "Your first name is too short !",
+        validator: (firstName) => {
+          return firstName.length > 1;
+        },
+      },
+      lastName: {
+        message: "Your last name is too short !",
+        validator: (lastName) => {
+          return lastName.length > 1;
+        },
+      },
+    },
+    onSubmit: () => {
+      if (isLogin) _signIn();
+      else _signUp();
     },
   });
 
@@ -51,6 +77,21 @@ export function useAuthenticationScreenModel() {
         : () => {
             setIsLogin(!isLogin);
           },
+    });
+  };
+
+  const submit = () => {
+    formController.validate({
+      targetFields: isLogin ? ["email", "password"] : undefined,
+      onValidationError: (message) => {
+        openModal({
+          child: <FailureModal message={message} />,
+        });
+      },
+      onSuccess: () => {
+        if (isLogin) _signIn();
+        else _signUp();
+      },
     });
   };
 
@@ -107,7 +148,7 @@ export function useAuthenticationScreenModel() {
 
   const _signIn = async () => {
     openModal({
-      child: <LoadingModal message="Creating user..." />,
+      child: <LoadingModal message="Logging you in..." />,
       closeable: false,
     });
     setTimeout(() => {
@@ -125,7 +166,15 @@ export function useAuthenticationScreenModel() {
                 child: (
                   <SuccessModal message="Logged In !, You'll be redirected shortly..." />
                 ),
+                closeable: false,
               });
+              setTimeout(() => {
+                if (!doesExist(data.avatarURI)) {
+                  navigate("/avatar", { replace: true });
+                } else {
+                  navigate("/", { replace: true });
+                }
+              }, 1000);
             },
           });
         })
@@ -142,8 +191,7 @@ export function useAuthenticationScreenModel() {
   };
 
   return {
-    signUp: _signUp,
-    signIn: _signIn,
+    submit,
     switches: { isLogin, hasSignedUp },
     Modal,
     switchForm,

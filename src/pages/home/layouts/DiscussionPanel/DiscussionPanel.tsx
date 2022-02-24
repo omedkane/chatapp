@@ -12,7 +12,12 @@ interface DiscussionPanelProps {
 }
 
 export function DiscussionPanel({ mate, messages }: DiscussionPanelProps) {
-  return (
+  const empty = messages.length === 0;
+  return empty ? (
+    <div className="flex flex-1 hakkunde">
+      Please open a discussion to start chatting
+    </div>
+  ) : (
     <div
       id="discussion-panel"
       className="flex flex-col flex-1 bg-white border-r-1 border-gray-300 justify-start items-start">

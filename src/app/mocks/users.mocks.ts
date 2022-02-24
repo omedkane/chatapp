@@ -11,25 +11,25 @@ const user_mocks: User[] = [
     id: "810e3083-01bc-5cb4-828a-59022c619d1c",
     firstName: "Stefan",
     lastName: "Salvatore",
-    avatarUri: avatar0,
+    avatarURI: avatar0,
   }),
   toModel({
     id: "caaaa379-d4a5-5e6c-a954-e952ce881c38",
     firstName: "Chris",
     lastName: "Pratt",
-    avatarUri: avatar1,
+    avatarURI: avatar1,
   }),
   toModel({
     id: "108822ac-1490-500d-b7f2-c4d701c55493",
     firstName: "Jennifer",
     lastName: "Lawrence",
-    avatarUri: avatar2,
+    avatarURI: avatar2,
   }),
   toModel({
     id: "fc242907-cdf6-5842-8d13-d23c74ec313c",
     firstName: "Joseph",
     lastName: "Morgan",
-    avatarUri: avatar3,
+    avatarURI: avatar3,
   }),
 ];
 

@@ -1,3 +1,4 @@
+import { avatarErrorHandler } from "@app/handlers/errors/avatar.error.handler";
 import { Chat } from "@app/models/chat";
 import { User } from "@app/models/user";
 import { Avatar } from "@pages/home/components/avatar/avatar";
@@ -20,7 +21,8 @@ export function ChatBoard({ currentUser, onlineFriends, chats }: LayoutProps) {
           <div className="flex justify-start">
             <div id="current-user-avatar" className="mr-4">
               <img
-                src={currentUser.avatarUri}
+                src={currentUser.avatarURI}
+                onError={avatarErrorHandler}
                 className="gShaded"
                 alt="Current User Profile Avatar"
               />
@@ -37,16 +39,24 @@ export function ChatBoard({ currentUser, onlineFriends, chats }: LayoutProps) {
         <div id="available-friends" className="mt-4 w-full">
           <div className="flex w-full justify-between">
             <span className="font-semibold">Online Now</span>
-            <span className="text-blue-600 font-bold text-sm">10</span>
+            <span className="text-blue-600 font-bold text-sm">
+              {onlineFriends.length}
+            </span>
           </div>
 
           <div className="flex w-full pt-3">
-            {onlineFriends.map((friend, index) => (
-              <Avatar
-                uri={friend.avatarUri}
-                key={index}
-                className="mr-6"></Avatar>
-            ))}
+            {onlineFriends.length !== 0 ? (
+              onlineFriends.map((friend, index) => (
+                <Avatar
+                  uri={friend.avatarURI}
+                  key={index}
+                  className="mr-6"></Avatar>
+              ))
+            ) : (
+              <span className="my-4 text-blue-500 text-center">
+                You don't have any friends, send invitations !
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -67,9 +77,15 @@ export function ChatBoard({ currentUser, onlineFriends, chats }: LayoutProps) {
           <input type="text" placeholder="Search a message or a contact" />
         </div>
         <div className="mt-2 flex flex-col hw-full">
-          {chats.map((chat, index) => (
-            <ChatBox key={index} chat={chat}></ChatBox>
-          ))}
+          {chats.length !== 0 ? (
+            chats.map((chat, index) => (
+              <ChatBox key={index} chat={chat}></ChatBox>
+            ))
+          ) : (
+            <span className="text-blue-500 text-center my-4 mx-8">
+              You have not started any conversation yet !
+            </span>
+          )}
         </div>
       </div>
     </div>

@@ -1,5 +1,9 @@
 @import "../../variables.scss";
 
+html, body {
+  background: white;
+}
+
 #sidebar {
   background-color: white;
   width: 6rem;
