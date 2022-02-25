@@ -61,8 +61,7 @@ export function useAuthenticationScreenModel() {
       },
     },
     onSubmit: () => {
-      if (isLogin) _signIn();
-      else _signUp();
+      submit();
     },
   });
 

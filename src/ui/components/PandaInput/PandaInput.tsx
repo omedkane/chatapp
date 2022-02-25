@@ -1,11 +1,11 @@
 import "./PandaInput.scss";
 import {
+  Component,
+  createRef,
   CSSProperties,
   Fragment,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
+  ReactNode,
+  RefObject,
 } from "react";
 import { AiFillEyeInvisible, AiOutlineEye } from "react-icons/ai";
 import { HiMail } from "react-icons/hi";
@@ -14,6 +14,7 @@ import { FaUserEdit } from "react-icons/fa";
 import { debounceTime, fromEvent, map, Observable, Subscription } from "rxjs";
 import { ControlNotification, FormController } from "./PandaForm";
 import { EventHelper } from "@core/helpers/event.helper";
+import produce from "immer";
 
 interface PandaInputProps<T = any> {
   name: Extract<keyof T, string>;
@@ -56,6 +57,19 @@ const InputIcons: PandaInputIcons = {
   },
 };
 
+interface PandaInputState {
+  isFilled: boolean;
+  isValid: boolean;
+  passwordVisible: boolean;
+  visualState: {
+    status: PandaStatus;
+    savedWidth: string;
+    savedMargin: string;
+    classes: string;
+    style: CSSProperties;
+  };
+}
+
 interface UsePandaInputArgs<Form> {
   formController: FormController<Form>;
   observable: Observable<ControlNotification>;
@@ -66,284 +80,304 @@ export function usePandaInput<Form>({
   formController,
   onPressEnter,
 }: UsePandaInputArgs<Form>) {
-  function PandaInput({
-    name,
-    title,
-    type,
-    className = "",
-    onDisabled,
-    onEnabled,
-  }: PandaInputProps<Form>) {
-    console.log(`PandaInput Rerender ${name}`);
-    const InputIcon = InputIcons[type];
+  class PandaInput extends Component<PandaInputProps<Form>, PandaInputState> {
+    inputRef: RefObject<HTMLInputElement>;
+    pandaInputRef: RefObject<HTMLDivElement>;
+    inputSubscription?: Subscription;
+    formSubscription?: Subscription;
 
-    const [isFilled, setIsFilled] = useState(false);
-    const [isValid, setIsValid] = useState(true);
-    const [passwordVisible, setPasswordVisible] = useState(false);
-    const [subscription, setSubscription] = useState<Subscription>();
+    constructor(
+      props: PandaInputProps<Form> | Readonly<PandaInputProps<Form>>
+    ) {
+      super(props);
+      this.inputRef = createRef<HTMLInputElement>();
+      this.pandaInputRef = createRef<HTMLDivElement>();
 
-    const setForm = useCallback(
-      (value: string) => formController.setField(name, value),
-      [name]
-    );
-
-    const [animationProps, setAnimationProps] = useState({
-      status: PandaStatus.Appeared,
-      savedWidth: "0",
-      savedMargin: "0",
-      classes: "",
-      style: {
-        "--panda-width": "0px",
-      } as CSSProperties,
-    });
-    // * Refs
-    const inputRef = useRef<HTMLInputElement>(null);
-    const pandaInputRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-      if (inputRef.current !== null) setForm(inputRef.current.value);
-    });
-
-    const registerValue = useCallback(
-      (value: string) => {
-        console.log({
-          name,
-          log: "This isn't doin' shit",
-        });
-
-        setForm(value);
-
-        const _validator =  formController.validators[name]?.validator;
-
-        if (value !== "") {
-          setIsFilled(true);
-          if (_validator !== undefined) {
-            setIsValid(_validator(value));
-          }
-        } else {
-          setIsFilled(false);
-          setIsValid(true);
-        }
-      },
-      [name, setForm]
-    );
-
-    const clearMe = useCallback(
-      (callback?: VoidFunction) => {
-        if (inputRef.current !== null) {
-          inputRef.current.value = "";
-          registerValue("");
-        }
-
-        if (callback !== undefined) callback();
-      },
-      [registerValue]
-    );
-
-    const setUp = useCallback(() => {
-      globalThis.requestAnimationFrame(() => {
-        if (inputRef.current === null) return;
-        console.log({ name, msg: "Sweet, I just subscribed" });
-
-        const changeStream = fromEvent(inputRef.current, "keyup");
-
-        const subscription = changeStream
-          .pipe(
-            map((event: Event) => (event.target as HTMLInputElement).value),
-            debounceTime(300)
-          )
-          .subscribe(registerValue);
-
-        setSubscription(subscription);
-      });
-    }, [name, registerValue]);
-
-    useEffect(() => {
-      setUp();
-    }, [setUp]);
-
-    const isAnimating = useCallback(
-      () =>
-        [PandaStatus.Appearing, PandaStatus.Vanishing].includes(
-          animationProps.status
-        ),
-      [animationProps.status]
-    );
-
-    const disableMe = useCallback(
-      (callback?: () => void) => {
-        if (
-          animationProps.status === PandaStatus.Vanished ||
-          isAnimating() ||
-          pandaInputRef.current === null
-        )
-          return;
-
-        const { width: _currentWidth, margin: _currentMargin } =
-          globalThis.getComputedStyle(pandaInputRef.current);
-
-        if (subscription !== undefined) {
-          subscription.unsubscribe();
-          console.log({ name, msg: "Yep I unsubscribed" });
-        }
-
-        clearMe();
-
-        setAnimationProps({
-          ...animationProps,
-          status: PandaStatus.Vanishing,
-          classes: "vanishing",
-        });
-
-        setSubscription(undefined);
-
-        if (pandaInputRef.current === null) return;
-
-        EventHelper.setAnimationEndCallback(
-          pandaInputRef.current,
-          "vanish-panda",
-          () => {
-            if (_currentWidth) {
-              setAnimationProps({
-                ...animationProps,
-                savedWidth: _currentWidth,
-                savedMargin: _currentMargin,
-                status: PandaStatus.Vanished,
-                classes: "vanished",
-              });
-
-              globalThis.requestAnimationFrame(() => {
-                if (onDisabled !== undefined) onDisabled();
-                if (callback !== undefined) callback();
-              });
-            }
-          }
-        );
-      },
-      [animationProps, clearMe, isAnimating, name, onDisabled, subscription]
-    );
-
-    const enableMe = useCallback(
-      (callback?: () => void) => {
-        if (animationProps.status === PandaStatus.Appeared || isAnimating())
-          return;
-
-        setAnimationProps({
-          ...animationProps,
-          status: PandaStatus.Appearing,
-          classes: "vanished appearing",
+      this.state = {
+        isFilled: false,
+        isValid: true,
+        passwordVisible: false,
+        visualState: {
+          status: PandaStatus.Appeared,
+          savedWidth: "0",
+          savedMargin: "0",
+          classes: "",
           style: {
-            "--panda-width": animationProps.savedWidth,
-            "--panda-margin": animationProps.savedMargin,
+            "--panda-width": "0px",
           } as CSSProperties,
-        });
+        },
+      };
+    }
 
-        requestAnimationFrame(() => {
-          if (pandaInputRef.current === null) return;
+    componentDidUpdate() {
+      if (this.inputRef.current !== null)
+        this.setForm(this.inputRef.current.value);
+    }
 
-          setUp();
+    setForm = (value: string) => {
+      return formController.setField(this.props.name, value);
+    };
 
-          EventHelper.setAnimationEndCallback(
-            pandaInputRef.current,
-            "show-input-box",
-            () => {
-              setAnimationProps({
-                ...animationProps,
-                status: PandaStatus.Appeared,
-                classes: "",
-                style: {},
-              });
-              globalThis.requestAnimationFrame(() => {
-                if (onEnabled !== undefined) onEnabled();
-                if (callback !== undefined) callback();
-              });
-            }
-          );
-        });
-      },
-      [animationProps, isAnimating, onEnabled, setUp]
-    );
+    registerValue = (value: string) => {
+      console.log({
+        name: this.props.name,
+        log: "This isn't doin' shit",
+      });
 
-    const switchMe = useCallback(
-      (callback?: () => void) => {
-        if (isAnimating()) return;
+      this.setForm(value);
 
-        if (animationProps.status === PandaStatus.Appeared) disableMe(callback);
-        else if (animationProps.status === PandaStatus.Vanished)
-          enableMe(callback);
-      },
-      [animationProps.status, disableMe, enableMe, isAnimating]
-    );
+      const _validator = formController.validators[this.props.name]?.validator;
 
-    useEffect(() => {
-      const subscription = observable.subscribe(
+      if (value !== "") {
+        this.setState((state) =>
+          produce(state, (draft) => {
+            draft.isFilled = true;
+            draft.isValid = _validator !== undefined ? _validator(value) : true;
+          })
+        );
+      } else {
+        console.log("I've been cleared");
+
+        this.setState((state) =>
+          produce(state, (draft) => {
+            draft.isFilled = false;
+            draft.isValid = true;
+          })
+        );
+      }
+    };
+
+    clearMe = (callback?: VoidFunction) => {
+      if (this.inputRef.current !== null) {
+        this.inputRef.current.value = "";
+        this.registerValue("");
+      }
+      if (callback !== undefined) callback();
+    };
+
+    subscribeToInput = () => {
+      if (this.inputRef.current === null) return;
+      console.log({ name: this.props.name, msg: "Sweet, I just subscribed" });
+
+      const changeStream = fromEvent(this.inputRef.current, "keyup");
+
+      this.inputSubscription = changeStream
+        .pipe(
+          map((event: Event) => (event.target as HTMLInputElement).value),
+          debounceTime(300)
+        )
+        .subscribe(this.registerValue);
+    };
+    subscribeToForm = () => {
+      this.formSubscription = observable.subscribe(
         (notification: ControlNotification) => {
-          if (notification.field !== name && notification.field !== "*") return;
+          if (
+            notification.field !== this.props.name &&
+            notification.field !== "*"
+          )
+            return;
 
           switch (notification.operation) {
             case "disable":
-              disableMe(notification.callback);
+              this.disableMe(notification.callback);
               break;
             case "enable":
-              enableMe(notification.callback);
+              this.enableMe(notification.callback);
               break;
             case "switch":
-              switchMe(notification.callback);
+              this.switchMe(notification.callback);
               break;
             case "clear":
-              clearMe(notification.callback);
+              this.clearMe(notification.callback);
               break;
           }
         }
       );
-      return () => {
-        subscription.unsubscribe();
-      };
-    }, [clearMe, disableMe, enableMe, name, switchMe]);
-
-    const togglePasswordVisibility = () => {
-      setPasswordVisible(!passwordVisible);
     };
 
-    return animationProps.status === PandaStatus.Vanished ? (
-      <Fragment />
-    ) : (
-      <div
-        ref={pandaInputRef}
-        style={animationProps.style}
-        className={`PandaInput flex rounded-xl h-16 w-full hakkunde ${
-          isValid ? "" : "invalidated"
-        } ${className} ${animationProps.classes}`}>
+    componentDidMount() {
+      this.subscribeToForm();
+      this.subscribeToInput();
+    }
+
+    componentWillUnmount() {
+      this.inputSubscription?.unsubscribe();
+      this.formSubscription?.unsubscribe();
+    }
+
+    isAnimating = () => {
+      return [PandaStatus.Appearing, PandaStatus.Vanishing].includes(
+        this.state.visualState.status
+      );
+    };
+
+    disableMe = (callback?: VoidFunction) => {
+      if (
+        this.state.visualState.status === PandaStatus.Vanished ||
+        this.isAnimating() ||
+        this.pandaInputRef.current === null
+      )
+        return;
+
+      const { width: _currentWidth, margin: _currentMargin } =
+        globalThis.getComputedStyle(this.pandaInputRef.current);
+
+      this.clearMe();
+      this.inputSubscription?.unsubscribe();
+
+      this.setState((state) =>
+        produce(state, (draft) => {
+          const vState = draft.visualState;
+          vState.status = PandaStatus.Vanishing;
+          vState.classes = "vanishing";
+        })
+      );
+      console.log("before animation");
+
+      console.table(this.state);
+
+      if (this.pandaInputRef.current === null) return;
+      EventHelper.setAnimationEndCallback(
+        this.pandaInputRef.current,
+        "vanish-panda",
+        () => {
+          if (_currentWidth) {
+            this.setState((state) =>
+              produce(state, (draft) => {
+                const vState = draft.visualState;
+
+                vState.savedWidth = _currentWidth;
+                vState.savedMargin = _currentMargin;
+                vState.status = PandaStatus.Vanished;
+                vState.classes = "vanished";
+              })
+            );
+
+            console.log({
+              name: this.props.name,
+              isFilled: this.state.isFilled,
+            });
+
+            globalThis.requestAnimationFrame(() => {
+              if (this.props.onDisabled !== undefined) this.props.onDisabled();
+              if (callback !== undefined) callback();
+            });
+          }
+        }
+      );
+    };
+
+    enableMe = (callback?: VoidFunction) => {
+      if (
+        this.state.visualState.status === PandaStatus.Appeared ||
+        this.isAnimating()
+      )
+        return;
+      this.setState((state) =>
+        produce(state, (draft) => {
+          const vState = draft.visualState;
+          vState.status = PandaStatus.Appearing;
+          vState.classes = "vanished appearing";
+          vState.style = {
+            "--panda-width": this.state.visualState.savedWidth,
+            "--panda-margin": this.state.visualState.savedMargin,
+          } as CSSProperties;
+        })
+      );
+
+      requestAnimationFrame(() => {
+        if (this.pandaInputRef.current === null) return;
+        console.log("what bout this");
+
+        this.subscribeToInput();
+
+        EventHelper.setAnimationEndCallback(
+          this.pandaInputRef.current,
+          "show-input-box",
+          () => {
+            this.setState((state) =>
+              produce(state, (draft) => {
+                const vState = draft.visualState;
+
+                vState.status = PandaStatus.Appeared;
+                vState.classes = "";
+                vState.style = {};
+              })
+            );
+
+            globalThis.requestAnimationFrame(() => {
+              if (this.props.onEnabled !== undefined) this.props.onEnabled();
+              if (callback !== undefined) callback();
+            });
+          }
+        );
+      });
+    };
+
+    switchMe = (callback?: () => void) => {
+      if (this.isAnimating()) return;
+
+      if (this.state.visualState.status === PandaStatus.Appeared)
+        this.disableMe(callback);
+      else if (this.state.visualState.status === PandaStatus.Vanished)
+        this.enableMe(callback);
+    };
+
+    togglePasswordVisibility = () => {
+      this.setState((state) =>
+        produce(state, (draft) => {
+          draft.passwordVisible = !draft.passwordVisible;
+        })
+      );
+    };
+
+    InputIcon = InputIcons[this.props.type];
+
+    render(): ReactNode {
+      return this.state.visualState.status === PandaStatus.Vanished ? (
+        <Fragment />
+      ) : (
         <div
-          className={`input-box rounded-xl flex flex-col hw-full ${
-            isFilled ? "is-filled" : ""
-          }`}>
-          <span id="input-name" className="text-gray-300">
-            {title}
-          </span>
-          <input
-            type={type === "password" && !passwordVisible ? type : "text"}
-            ref={inputRef}
-            onKeyUp={(event) => {
-              if (event.key === "Enter") {
-                onPressEnter();
+          ref={this.pandaInputRef}
+          style={this.state.visualState.style}
+          className={`PandaInput flex rounded-xl h-16 w-full hakkunde ${
+            this.state.isValid ? "" : "invalidated"
+          } ${this.props.className} ${this.state.visualState.classes}`}>
+          <div
+            className={`input-box rounded-xl flex flex-col hw-full ${
+              this.state.isFilled ? "is-filled" : ""
+            }`}>
+            <span id="input-name" className="text-gray-300">
+              {this.props.title}
+            </span>
+            <input
+              type={
+                this.props.type === "password" && !this.state.passwordVisible
+                  ? this.props.type
+                  : "text"
               }
-            }}
-            className="hw-full bg-transparent autofill:bg-black outline-none placeholder:font-bold"
-          />
-        </div>
-        <div id="input-icon" className="h-full flex hakkunde text-gray-300">
-          {type === "password" ? (
-            <InputIcon
-              passwordVisible={passwordVisible}
-              onClick={() => togglePasswordVisibility()}
+              ref={this.inputRef}
+              onKeyUp={(event) => {
+                if (event.key === "Enter") {
+                  onPressEnter();
+                }
+              }}
+              className="hw-full bg-transparent autofill:bg-black outline-none placeholder:font-bold"
             />
-          ) : (
-            <InputIcon />
-          )}
+          </div>
+          <div id="input-icon" className="h-full flex hakkunde text-gray-300">
+            {this.props.type === "password" ? (
+              <this.InputIcon
+                passwordVisible={this.state.passwordVisible}
+                onClick={() => this.togglePasswordVisibility()}
+              />
+            ) : (
+              <this.InputIcon />
+            )}
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
   }
 
   return PandaInput;
