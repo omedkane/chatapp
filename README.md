@@ -1,4 +1,9 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app), using the [Redux](https://redux.js.org/) and [Redux Toolkit](https://redux-toolkit.js.org/) template.
+# ChatApp (Work in progress)
+## What we'll build
+* Our own form and inputs from scratch (With RxJs)
+* Beautifully designed and animated Modals from scratch
+* Responsive Design
+* ...
 
 ## Available Scripts
 
