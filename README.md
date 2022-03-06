@@ -1,6 +1,6 @@
 # ChatApp (Work in progress)
 ## What we'll build
-* Our own form and inputs from scratch (With RxJs)
+* Our own form with validators and hooks to control it remotely and inputs from scratch (With RxJs)
 * Beautifully designed and animated Modals from scratch
 * Responsive Design
 * ...
