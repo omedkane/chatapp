@@ -1,9 +1,12 @@
 # ChatApp (Work in progress)
+Check the server [here](https://www.github.com/omedkane/chatapp)
 ## What we'll build
 * Our own form with validators and hooks to control it remotely and inputs from scratch (With RxJs)
 * Beautifully designed and animated Modals from scratch
 * Responsive Design
-* ...
+* Nice animated transition between SignUp and SignIn 
+* Real-Time End-to-End encrypted chat application
+* And much more...
 
 ## Available Scripts
 
