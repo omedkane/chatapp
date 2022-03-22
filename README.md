@@ -1,5 +1,5 @@
 # ChatApp (Work in progress)
-Check the server [here](https://www.github.com/omedkane/chatapp)
+Check the server [here](https://www.github.com/omedkane/chatapp_server)
 ## What we'll build
 * Our own form with validators and hooks to control it remotely and inputs from scratch (With RxJs)
 * Beautifully designed and animated Modals from scratch
